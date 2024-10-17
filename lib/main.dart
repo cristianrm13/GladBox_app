@@ -1,7 +1,8 @@
 import 'package:GvApp/screen/bot.dart';
+import 'package:GvApp/screen/homeglad.dart';
 import 'package:flutter/material.dart';
 import 'package:GvApp/screen/perfil.dart';
-import 'package:GvApp/screen/location_status.dart';
+//import 'package:GvApp/screen/location_status.dart';
 import 'package:GvApp/screen/home.dart';
 import 'package:GvApp/screen/scafold.dart';  
 import 'package:url_launcher/url_launcher.dart';
@@ -50,7 +51,8 @@ class _MainScreenState extends State<MainScreen> {
     const GladBoxHomeScreens(),
     const GladBoxHomeScreen(),
     const Products(),
-    const LocationStatusScreen(),
+    //const LocationStatusScreen(),
+    const ProfileScreen(),
     const ContactsScreen(),
     const ChatScreen(),
   ];
@@ -99,7 +101,7 @@ Widget build(BuildContext context) {
           physics: const NeverScrollableScrollPhysics(),
           children: _screens,
         ),
-        Positioned(
+        /* Positioned(
           top: 25, 
           left: 325,
           child: FloatingActionButton(
@@ -108,15 +110,15 @@ Widget build(BuildContext context) {
             backgroundColor: const Color.fromARGB(132, 134, 133, 133),
             child: const Icon(Icons.circle_outlined, color: Colors.white),
           ),
-        ),
+        ), */
       ],
     ),
     bottomNavigationBar: BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'login'),
         BottomNavigationBarItem(icon: Icon(Icons.feed), label: 'Feed'),
         BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Productos'),
-        BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'Ubicación'),
+        BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'homegald'),
         BottomNavigationBarItem(icon: Icon(Icons.contacts_outlined), label: 'Informacion'),
         BottomNavigationBarItem(icon: Icon(Icons.messenger), label: 'ChatBot'),
       ],

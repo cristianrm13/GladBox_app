@@ -21,6 +21,7 @@ dependencies:
   connectivity_plus: ^4.0.1
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.0.0
+  image_picker: ^0.8.7+4
 
 dev_dependencies:
   flutter_test:
@@ -38,3 +39,5 @@ flutter:
     - assets/facebook.png
     - assets/X.png
     - assets/Gladbox.png
+    #- assets/profile_picture.png
+    #- assets/post_image.png

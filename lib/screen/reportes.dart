@@ -101,7 +101,7 @@ class Product extends State<Products> {
               TextField(
                 controller: _priceController,
                 decoration: const InputDecoration(
-                  labelText: 'ubicacion',
+                  labelText: 'price',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                     borderSide:
@@ -113,7 +113,7 @@ class Product extends State<Products> {
               TextField(
                 controller: _stockController,
                 decoration: const InputDecoration(
-                  labelText: 'Categoria',
+                  labelText: 'stock',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                     borderSide:
@@ -132,7 +132,7 @@ class Product extends State<Products> {
                         const Color.fromARGB(255, 2, 197, 77)),
                   ),
                   onPressed: _submitForm,
-                  child: const Text('Reprtar'),
+                  child: const Text('Reportar'),
                 ),
               )
             ],
