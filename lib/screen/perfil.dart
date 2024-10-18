@@ -179,28 +179,6 @@ class PerfilScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 3, // Indica que la pestaña activa es "Profile"
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.compare_arrows_outlined),
-            label: 'Trans.',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.feed),
-            label: 'Feeds',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report_gmailerrorred_outlined),
-            label: 'Reportar',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 }

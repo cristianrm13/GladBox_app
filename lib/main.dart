@@ -1,11 +1,12 @@
-import 'package:GvApp/screen/bot.dart';
-import 'package:GvApp/screen/home.dart';
 import 'package:flutter/material.dart';
-import 'package:GvApp/screen/datos.dart';
-//import 'package:GvApp/screen/location_status.dart';
-import 'package:GvApp/screen/login.dart';
-import 'package:GvApp/screen/perfil.dart';  
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:GvApp/screen/login.dart';
+import 'package:GvApp/screen/home.dart';
+import 'package:GvApp/screen/perfil.dart';  
+//import 'package:GvApp/screen/datos.dart';
+//import 'package:GvApp/screen/bot.dart';
+//import 'package:GvApp/screen/location_status.dart';
 //import 'package:GvApp/screen/reportes.dart';
 
 final Uri _url = Uri.parse('https://github.com/cristianrm13/APP_practica2.git'); 
@@ -51,9 +52,9 @@ class _MainScreenState extends State<MainScreen> {
     const LoginScreens(),
     const HomeScreenG(),
     const PerfilScreen(),
-    const DatosScreen(),
-    const ChatScreen(),
+    //const DatosScreen(),
 
+    //const ChatScreen(),
     //const LocationStatusScreen(),
   ];
   // Función para abrir la URL
@@ -115,12 +116,12 @@ Widget build(BuildContext context) {
     ),
     bottomNavigationBar: BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'login'),
-        BottomNavigationBarItem(icon: Icon(Icons.feed), label: 'Feed'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Productos'),
-        BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'homegald'),
-        BottomNavigationBarItem(icon: Icon(Icons.contacts_outlined), label: 'Informacion'),
-        BottomNavigationBarItem(icon: Icon(Icons.messenger), label: 'ChatBot'),
+        BottomNavigationBarItem(icon: Icon(Icons.login), label: 'login'),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+       // BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Productos'),
+       // BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'homegald'),
+        //BottomNavigationBarItem(icon: Icon(Icons.contacts_outlined), label: 'Informacion'),
+        BottomNavigationBarItem(icon: Icon(Icons.person_outlined), label: 'Profile'),
       ],
       currentIndex: _selectedIndex,
       selectedItemColor: Colors.black,
