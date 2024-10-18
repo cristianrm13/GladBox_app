@@ -1,12 +1,12 @@
 import 'package:GvApp/screen/bot.dart';
-import 'package:GvApp/screen/homeglad.dart';
-import 'package:flutter/material.dart';
-import 'package:GvApp/screen/perfil.dart';
-//import 'package:GvApp/screen/location_status.dart';
 import 'package:GvApp/screen/home.dart';
-import 'package:GvApp/screen/scafold.dart';  
+import 'package:flutter/material.dart';
+import 'package:GvApp/screen/datos.dart';
+//import 'package:GvApp/screen/location_status.dart';
+import 'package:GvApp/screen/login.dart';
+import 'package:GvApp/screen/perfil.dart';  
 import 'package:url_launcher/url_launcher.dart';
-import 'package:GvApp/screen/reportes.dart';
+//import 'package:GvApp/screen/reportes.dart';
 
 final Uri _url = Uri.parse('https://github.com/cristianrm13/APP_practica2.git'); 
 
@@ -48,13 +48,13 @@ class _MainScreenState extends State<MainScreen> {
 
   // Lista de pantallas
   final List<Widget> _screens = [
-    const GladBoxHomeScreens(),
-    const GladBoxHomeScreen(),
-    const Products(),
-    //const LocationStatusScreen(),
-    const ProfileScreen(),
-    const ContactsScreen(),
+    const LoginScreens(),
+    const HomeScreenG(),
+    const PerfilScreen(),
+    const DatosScreen(),
     const ChatScreen(),
+
+    //const LocationStatusScreen(),
   ];
   // Función para abrir la URL
   Future<void> _launchUrl() async {

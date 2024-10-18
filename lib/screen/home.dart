@@ -1,113 +1,182 @@
+import 'package:GvApp/screen/notificaciones.dart';
+import 'package:GvApp/screen/perfil.dart';
 import 'package:flutter/material.dart';
-import 'package:GvApp/screen/sign_up.dart';
+import 'package:GvApp/screen/formularioReporte.dart'; 
 
-class GladBoxHomeScreens extends StatelessWidget {
-  const GladBoxHomeScreens({super.key});
+class HomeScreenG extends StatelessWidget {
+  const HomeScreenG({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Image.asset('assets/Gladbox.png', height: 100),
-              const SizedBox(height: 20),
-              const Text(
-                'Inicia sesión en tu cuenta',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'ex: jon.smith@email.com',
-                  labelText: 'Email',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Contraseña',
-                  labelText: 'Contraseña',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // Aquí va la lógica de inicio de sesión
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: const Size(double.infinity, 50), 
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-                child: const Text('INICIAR SESIÓN'),
-              ),
-              const SizedBox(height: 20),
-              const Text('o inicia sesión con'),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  IconButton(
-                    icon: Image.asset('assets/google.png'), 
-                    iconSize: 40,
-                    onPressed: () {
-                      // Lógica de inicio de sesión con Google
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    icon: Image.asset('assets/facebook.png'), 
-                    iconSize: 40,
-                    onPressed: () {
-                      // Lógica de inicio de sesión con Facebook
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    icon: Image.asset('assets/X.png'), // Asegúrate de tener el icono de Twitter
-                    iconSize: 40,
-                    onPressed: () {
-                      // Lógica de inicio de sesión con Twitter
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  // Aquí se realiza la navegación a la pantalla de registro
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignUpScreen()), // SignUpScreen es la pantalla de registro
-                  );
-                },
-                child: const Text(
-                  "¿No tienes una cuenta? INSCRIBIRSE",
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset('assets/Gladbox.png'), 
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              // Acción para agregar una publicación o cualquier otra acción
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FormularioReporte()),
+                 );
+            },
           ),
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {
+              // Acción para notificaciones
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationScreen()),
+                 );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Acción para ajustes
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PerfilScreen()),
+                 );
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Barra de entrada para crear una nueva publicación
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                const CircleAvatar(
+                  backgroundImage: AssetImage('assets/USER.jpg'), // Cambia la imagen del perfil
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: '¿Qué estás pensando?',
+                      fillColor: Colors.green[100],
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          // Lista de publicaciones
+          Expanded(
+            child: ListView.builder(
+              itemCount: 2, // Cambia este valor por el número de publicaciones que tengas
+              itemBuilder: (context, index) {
+                return _buildPostCard();
+              },
+            ),
+          ),
+        ],
+      ),
+/*       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.green,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.black54,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.monetization_on),
+            label: 'Trans.',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.feed),
+            label: 'Feeds',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.report),
+            label: 'Reportar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ), */
+    );
+  }
+
+  Widget _buildPostCard() {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 5,
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Información del usuario y tiempo
+            const Row(
+              children: [
+                CircleAvatar(
+                  backgroundImage: AssetImage('assets/USER.jpg'), // Imagen del usuario
+                ),
+                SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Juan Perez',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '08:39 am',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            // Texto de la publicación
+            const Text(
+              'Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Fringilla Natoque Id Aenean.',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            // Imagen de la publicación
+            ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Image.asset(
+                'assets/Gladbox.png', // Cambia la imagen de la publicación
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Interacciones de la publicación (likes y comentarios)
+            const Row(
+              children: [
+                Icon(Icons.thumb_up, color: Colors.blue),
+                SizedBox(width: 5),
+                Text('1,964'),
+                SizedBox(width: 20),
+                Icon(Icons.comment, color: Colors.grey),
+                SizedBox(width: 5),
+                Text('135'),
+              ],
+            ),
+          ],
         ),
       ),
     );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+
 
 class FormularioReporte extends StatefulWidget {
   const FormularioReporte({super.key});
@@ -18,7 +20,7 @@ class _FormularioReporteState extends State<FormularioReporte> {
   final ImagePicker _picker = ImagePicker(); // Instancia de ImagePicker
 
   // Método para seleccionar la imagen desde la galería
-  Future<void> _pickImage() async {
+/*   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
@@ -26,7 +28,27 @@ class _FormularioReporteState extends State<FormularioReporte> {
         _selectedImage = File(pickedFile.path); // Guardamos la imagen seleccionada
       });
     }
+  } */
+
+Future<void> _pickImage() async {
+  // Verificar el estado del permiso de almacenamiento
+  var status = await Permission.storage.status;
+  if (!status.isGranted) {
+    // Solicitar permiso si no está concedido
+    await Permission.storage.request();
   }
+
+  // Seleccionar la imagen
+  final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+  if (pickedFile != null) {
+    setState(() {
+      _selectedImage = File(pickedFile.path); // Guardamos la imagen seleccionada
+    });
+  } else {
+    print('No se seleccionó ninguna imagen.');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
