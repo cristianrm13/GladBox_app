@@ -1,87 +1,54 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 
-class Products extends StatefulWidget {
-  const Products({super.key});
+
+class FormularioReportea extends StatefulWidget {
+  const FormularioReportea({super.key});
 
   @override
   _FormularioReporteState createState() => _FormularioReporteState();
 }
 
-class _FormularioReporteState extends State<Products> {
+class _FormularioReporteState extends State<FormularioReportea> {
   final TextEditingController _tituloController = TextEditingController();
   final TextEditingController _descripcionController = TextEditingController();
-  
+
   String _categoriaSeleccionada = 'Alumbrado'; // Categoría por defecto
   File? _selectedImage; // Para almacenar la imagen seleccionada
   final ImagePicker _picker = ImagePicker(); // Instancia de ImagePicker
 
-  Future<void> _pickImage() async {
-    // Verificar el estado del permiso de almacenamiento
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      // Solicitar permiso si no está concedido
-      await Permission.storage.request();
-    }
-
-    // Seleccionar la imagen
+  // Método para seleccionar la imagen desde la galería
+/*   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path); // Guardamos la imagen seleccionada
       });
-    } else {
-      print('No se seleccionó ninguna imagen.');
     }
+  } */
+
+Future<void> _pickImage() async {
+  // Verificar el estado del permiso de almacenamiento
+  var status = await Permission.storage.status;
+  if (!status.isGranted) {
+    // Solicitar permiso si no está concedido
+    await Permission.storage.request();
   }
 
-  Future<void> _submitReport() async {
-    final String titulo = _tituloController.text;
-    final String descripcion = _descripcionController.text;
+  // Seleccionar la imagen
+  final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
-    if (_selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor selecciona una imagen')),
-      );
-      return;
-    }
-
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('http://192.168.1.103:3000/api/productos'), // Cambia la URL si es necesario
-    );
-
-    request.fields['titulo'] = titulo;
-    request.fields['categoria'] = _categoriaSeleccionada;
-    request.fields['descripcion'] = descripcion;
-
-    // Añade la imagen al request
-    request.files.add(
-      await http.MultipartFile.fromPath(
-        'imagen', 
-        _selectedImage!.path,
-      ),
-    );
-
-    // Envía el request
-    final response = await request.send();
-    
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reporte enviado exitosamente')),
-      );
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al enviar el reporte')),
-      );
-    }
+  if (pickedFile != null) {
+    setState(() {
+      _selectedImage = File(pickedFile.path); // Guardamos la imagen seleccionada
+    });
+  } else {
+    print('No se seleccionó ninguna imagen.');
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +70,7 @@ class _FormularioReporteState extends State<Products> {
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Image.asset('assets/Gladbox.png', width: 40),
+            child: Image.asset('assets/Gladbox.png', width: 40), // Cambia el logo
           ),
         ],
       ),
@@ -169,7 +136,8 @@ class _FormularioReporteState extends State<Products> {
                 controller: _descripcionController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: 'Descripción...',
+                  hintText:
+                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...',
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(
@@ -207,7 +175,12 @@ class _FormularioReporteState extends State<Products> {
               const SizedBox(height: 40),
               Center(
                 child: ElevatedButton(
-                  onPressed: _submitReport, // Llama a la función que envía el reporte
+                  onPressed: () {
+                    // Implementar la lógica para enviar el reporte
+                    print('Título: ${_tituloController.text}');
+                    print('Categoría: $_categoriaSeleccionada');
+                    print('Descripción: ${_descripcionController.text}');
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(
@@ -217,7 +190,7 @@ class _FormularioReporteState extends State<Products> {
                     ),
                   ),
                   child: const Text(
-                    'Reportar',
+                    'reportar',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),

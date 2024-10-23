@@ -14,21 +14,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _acceptedTerms = false;
 
   // Controladores para cada campo de entrada
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _contrasenaController = TextEditingController();
+  final TextEditingController _confirmcontrasenaController = TextEditingController();
   
   // Función que hace la solicitud HTTP
-  Future<void> registerUser(String name, String email, String password) async {
+  Future<void> registerUser(String nombre, String email, String contrasena) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.101:3000/api/register'), // Cambia a tu endpoint de registro
+        Uri.parse('http://192.168.2.106:3000/api/usuarios'), // Cambia a tu endpoint de registro
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "name": name,
+          "nombre": nombre,
           "email": email,
-          "password": password,
+          "contrasena": contrasena,
         }),
       );
 
@@ -72,7 +72,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 children: [
                   TextFormField(
-                    controller: _nameController,
+                    controller: _nombreController,
                     decoration: const InputDecoration(
                       labelText: 'Nombre',
                       hintText: 'ex: Jon Smith',
@@ -102,7 +102,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
-                    controller: _passwordController,
+                    controller: _contrasenaController,
                     decoration: const InputDecoration(
                       labelText: 'Contraseña',
                       border: OutlineInputBorder(),
@@ -117,7 +117,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
-                    controller: _confirmPasswordController,
+                    controller: _confirmcontrasenaController,
                     decoration: const InputDecoration(
                       labelText: 'Confirmar contraseña',
                       border: OutlineInputBorder(),
@@ -127,7 +127,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Por favor confirma tu contraseña';
                       }
-                      if (value != _passwordController.text) {
+                      if (value != _contrasenaController.text) {
                         return 'Las contraseñas no coinciden';
                       }
                       return null;
@@ -188,9 +188,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                         // Llama a la función de registro
                         registerUser(
-                          _nameController.text,
+                          _nombreController.text,
                           _emailController.text,
-                          _passwordController.text,
+                          _contrasenaController.text,
                         );
                       }
                     },

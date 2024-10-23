@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';  // Para convertir el body a JSON
 
 class FormularioReporte extends StatefulWidget {
   const FormularioReporte({super.key});
@@ -12,43 +13,101 @@ class FormularioReporte extends StatefulWidget {
 }
 
 class _FormularioReporteState extends State<FormularioReporte> {
-  final TextEditingController _tituloController = TextEditingController();
-  final TextEditingController _descripcionController = TextEditingController();
-
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  
   String _categoriaSeleccionada = 'Alumbrado'; // Categoría por defecto
   File? _selectedImage; // Para almacenar la imagen seleccionada
   final ImagePicker _picker = ImagePicker(); // Instancia de ImagePicker
 
-  // Método para seleccionar la imagen desde la galería
-/*   Future<void> _pickImage() async {
+  Future<void> _pickImage() async {
+    // Verificar el estado del permiso de almacenamiento
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      // Solicitar permiso si no está concedido
+      await Permission.storage.request();
+    }
+
+    // Seleccionar la imagen
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path); // Guardamos la imagen seleccionada
       });
+    } else {
+      print('No se seleccionó ninguna imagen.');
     }
-  } */
-
-Future<void> _pickImage() async {
-  // Verificar el estado del permiso de almacenamiento
-  var status = await Permission.storage.status;
-  if (!status.isGranted) {
-    // Solicitar permiso si no está concedido
-    await Permission.storage.request();
   }
 
-  // Seleccionar la imagen
-  final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> _submitReport() async {
+    final String title = _titleController.text.trim(); // Elimina espacios en blanco
+    final String description = _descriptionController.text.trim(); // Elimina espacios en blanco
 
-  if (pickedFile != null) {
-    setState(() {
-      _selectedImage = File(pickedFile.path); // Guardamos la imagen seleccionada
-    });
-  } else {
-    print('No se seleccionó ninguna imagen.');
+    // Verificar si todos los campos están llenos
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, completa el campo "Título".')),
+      );
+      return;
+    }
+
+    if (_categoriaSeleccionada.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, selecciona una categoría.')),
+      );
+      return;
+    }
+
+    if (description.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, completa el campo "Descripción".')),
+      );
+      return;
+    }
+
+    // Si falta la imagen, podrías mostrar un mensaje o seguir con el envío del reporte sin imagen
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, selecciona una imagen.')),
+      );
+      return;
+    }
+
+    try {
+      // Aquí se envía el reporte con los datos en formato JSON
+      final response = await http.post(
+        Uri.parse('http://192.168.2.106:3000/api/quejas'),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          'title': title,
+          'description': description,
+          'category': _categoriaSeleccionada,
+        }),
+      );
+
+      print('Status code: ${response.statusCode}'); // Imprimir el estado de la respuesta
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reporte enviado exitosamente')),
+        );
+        Navigator.pop(context);
+      } else {
+        print('Error al enviar el reporte: ${response.body}'); // Imprimir el cuerpo de la respuesta
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al enviar el reporte: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      print('Exception: $e'); // Imprimir cualquier excepción que ocurra
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al enviar el reporte.')),
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +129,7 @@ Future<void> _pickImage() async {
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Image.asset('assets/Gladbox.png', width: 40), // Cambia el logo
+            child: Image.asset('assets/Gladbox.png', width: 40),
           ),
         ],
       ),
@@ -86,7 +145,7 @@ Future<void> _pickImage() async {
               ),
               const SizedBox(height: 10),
               TextField(
-                controller: _tituloController,
+                controller: _titleController,
                 decoration: InputDecoration(
                   hintText: '...',
                   filled: true,
@@ -133,11 +192,10 @@ Future<void> _pickImage() async {
               ),
               const SizedBox(height: 10),
               TextField(
-                controller: _descripcionController,
+                controller: _descriptionController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText:
-                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...',
+                  hintText: 'Descripción...',
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(
@@ -175,12 +233,7 @@ Future<void> _pickImage() async {
               const SizedBox(height: 40),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Implementar la lógica para enviar el reporte
-                    print('Título: ${_tituloController.text}');
-                    print('Categoría: $_categoriaSeleccionada');
-                    print('Descripción: ${_descripcionController.text}');
-                  },
+                  onPressed: _submitReport, // Llama a la función que envía el reporte
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(
@@ -190,7 +243,7 @@ Future<void> _pickImage() async {
                     ),
                   ),
                   child: const Text(
-                    'reportar',
+                    'Reportar',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),

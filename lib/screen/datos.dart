@@ -13,13 +13,13 @@ class DatosScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center, 
           children: <Widget>[
             const CircleAvatar(
-              backgroundImage: AssetImage('assets/Gladbox.png'),
+              backgroundImage: AssetImage('assets/UP.jpg'),
               radius: 80, 
             ),
             const SizedBox(height: 20),
             const SizedBox(height: 10),
             Text(
-              'tu perfil',
+              'Universidad Politecnica de Chiapas \n Prograamacion Movil II',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w400,
@@ -29,7 +29,7 @@ class DatosScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              'Nombre',
+              'Cristian Gerardo Vazquez Ramos',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,

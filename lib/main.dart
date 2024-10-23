@@ -1,13 +1,15 @@
+import 'package:GvApp/screen/sensor.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:GvApp/screen/login.dart';
 import 'package:GvApp/screen/home.dart';
 import 'package:GvApp/screen/perfil.dart';  
-//import 'package:GvApp/screen/datos.dart';
-//import 'package:GvApp/screen/bot.dart';
-//import 'package:GvApp/screen/location_status.dart';
-//import 'package:GvApp/screen/reportes.dart';
+import 'package:GvApp/screen/qr.dart';
+import 'package:GvApp/screen/datos.dart';
+import 'package:GvApp/screen/bot.dart';
+import 'package:GvApp/screen/location_status.dart';
+import 'package:GvApp/screen/textSpeach.dart';
 
 final Uri _url = Uri.parse('https://github.com/cristianrm13/APP_practica2.git'); 
 
@@ -52,10 +54,13 @@ class _MainScreenState extends State<MainScreen> {
     const LoginScreens(),
     const HomeScreenG(),
     const PerfilScreen(),
-    //const DatosScreen(),
+    const DatosScreen(),
 
-    //const ChatScreen(),
-    //const LocationStatusScreen(),
+    const LocationStatusScreen(),
+    const QRScannerScreen(),
+    const SensorScreen(),
+    const ChatScreen(),
+    const TextToSpeechScreen(),
   ];
   // Función para abrir la URL
   Future<void> _launchUrl() async {
@@ -102,7 +107,7 @@ Widget build(BuildContext context) {
           physics: const NeverScrollableScrollPhysics(),
           children: _screens,
         ),
-        /* Positioned(
+        Positioned(
           top: 25, 
           left: 325,
           child: FloatingActionButton(
@@ -111,7 +116,7 @@ Widget build(BuildContext context) {
             backgroundColor: const Color.fromARGB(132, 134, 133, 133),
             child: const Icon(Icons.circle_outlined, color: Colors.white),
           ),
-        ), */
+        ),
       ],
     ),
     bottomNavigationBar: BottomNavigationBar(
@@ -120,8 +125,13 @@ Widget build(BuildContext context) {
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
        // BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Productos'),
        // BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'homegald'),
-        //BottomNavigationBarItem(icon: Icon(Icons.contacts_outlined), label: 'Informacion'),
         BottomNavigationBarItem(icon: Icon(Icons.person_outlined), label: 'Profile'),
+        BottomNavigationBarItem(icon: Icon(Icons.contacts_outlined), label: 'Informacion'),
+        BottomNavigationBarItem(icon: Icon(Icons.gps_fixed), label: 'GPS'),
+        BottomNavigationBarItem(icon: Icon(Icons.qr_code), label: 'Qr'),
+        BottomNavigationBarItem(icon: Icon(Icons.sensor_door), label: 'sensores'),
+        BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+        BottomNavigationBarItem(icon: Icon(Icons.voice_chat_outlined), label: 'VOZ'),
       ],
       currentIndex: _selectedIndex,
       selectedItemColor: Colors.black,

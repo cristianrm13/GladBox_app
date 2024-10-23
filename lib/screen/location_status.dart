@@ -1,151 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LocationStatusScreen extends StatefulWidget {
-  const LocationStatusScreen({super.key});
+  const LocationStatusScreen({Key? key}) : super(key: key);
 
   @override
-  _LocationStatusScreenState createState() => _LocationStatusScreenState();
+  _LocationScreenState createState() => _LocationScreenState();
 }
 
-class _LocationStatusScreenState extends State<LocationStatusScreen> {
-  final double _thresholdDistance = 5.0; // 5 metros como umbral
-  Position? _lastPosition;
-  DateTime? _lastUpdateTime;
-  final int _minTimeBetweenUpdates = 5; // 5 segundos entre actualizaciones
-  String _locationStatus = 'Desconocido'; // Estado inicial de la ubicación
+class _LocationScreenState extends State<LocationStatusScreen> {
+  String _locationMessage = "Presiona el botón para obtener la ubicación";
+  double? _latitude;
+  double? _longitude;
 
-  // Obtener ubicación y procesar anomalías
-  Future<void> _getLocationStatus() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Verificar si los servicios de ubicación están habilitados
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
+  Future<void> _getCurrentLocation() async {
+    LocationPermission permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
       setState(() {
-        _locationStatus = 'Servicio de localización deshabilitado';
+        _locationMessage = "Permiso de ubicación denegado";
       });
       return;
     }
 
-    // Verificar los permisos de localización
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        setState(() {
-          _locationStatus = 'Permiso de localización denegado';
-        });
-        return;
-      }
-    }
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    setState(() {
+      _latitude = position.latitude;
+      _longitude = position.longitude;
+      _locationMessage =
+          "Latitud: ${_latitude}, Longitud: ${_longitude}";
+    });
+  }
 
-    if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        _locationStatus = 'Permiso de localización denegado permanentemente';
-      });
-      return;
-    }
+  Future<void> _launchMapsUrl() async {
+    if (_latitude == null || _longitude == null) return;
+    final String googleMapsUrl =
+        'https://www.google.com/maps/search/?api=1&query=$_latitude,$_longitude';
 
-    // Obtener la ubicación actual
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    DateTime currentTime = DateTime.now();
-
-    // Debugging - Imprimir la ubicación actual
-    print('Nueva ubicación: ${position.latitude}, ${position.longitude}');
-
-    // Validar anomalías en la ubicación
-    if (_lastPosition != null && _lastUpdateTime != null) {
-      double distance = Geolocator.distanceBetween(
-        _lastPosition!.latitude,
-        _lastPosition!.longitude,
-        position.latitude,
-        position.longitude,
-      );
-
-      int timeDifference = currentTime.difference(_lastUpdateTime!).inSeconds;
-
-      // Debugging - Imprimir la distancia y la diferencia de tiempo
-      print('Distancia: $distance metros');
-      print('Diferencia de tiempo: $timeDifference segundos');
-
-      if (distance > _thresholdDistance && timeDifference < _minTimeBetweenUpdates) {
-        setState(() {
-          _locationStatus = 'Ubicación FALSA detectada. Movimiento rápido de ${distance.toStringAsFixed(2)} metros en $timeDifference segundos.';
-        });
-        print(_locationStatus); // Debugging - Ver si el mensaje de ubicación falsa aparece
-      } else {
-        setState(() {
-          _locationStatus = 'Ubicación REAL: ${position.latitude}, ${position.longitude}';
-        });
-      }
+    if (await canLaunch(googleMapsUrl)) {
+      await launch(googleMapsUrl);
     } else {
-      // Si es la primera vez, simplemente almacenamos la ubicación
-      setState(() {
-        _locationStatus = 'Ubicación REAL: ${position.latitude}, ${position.longitude}';
-      });
+      throw 'No se pudo abrir $googleMapsUrl';
     }
-
-    // Actualizar los valores de la última posición y tiempo
-    _lastPosition = position;
-    _lastUpdateTime = currentTime;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Estado de la ubicación'),
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: Container(
-        padding: const EdgeInsets.all(20.0),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[100]!, Colors.blue[300]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: Card(
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
+      appBar: AppBar(title: const Text('GPS Location')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_locationMessage),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _getCurrentLocation,
+              child: const Text('Obtener Ubicación'),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.location_on,
-                    size: 50,
-                    color: _locationStatus.contains('FALSA') ? Colors.red : Colors.green,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    _locationStatus,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: _locationStatus.contains('FALSA') ? Colors.red : Colors.black,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _getLocationStatus, // Actualizamos la ubicación al hacer clic
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                    ),
-                    child: const Text('Actualizar Ubicación'),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _latitude != null && _longitude != null ? _launchMapsUrl : null,
+              child: const Text('Ver en Mapa'),
             ),
-          ),
+          ],
         ),
       ),
     );
