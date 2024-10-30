@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:local_auth/local_auth.dart';
+import 'package:flutter/services.dart';
 
 class EditarPerfil extends StatefulWidget {
   const EditarPerfil({super.key});
@@ -17,11 +19,10 @@ class EditarPerfilState extends State<EditarPerfil> {
   final TextEditingController telefonoController = TextEditingController();
   final TextEditingController direccionController = TextEditingController(text: 'Dirección');
 
-  String paisSeleccionado = 'México';
+  String paisSeleccionado = 'San Jacinto';
   String generoSeleccionado = 'Género';
-
-  // ID del usuario (deberás obtener este valor dinámicamente)
-  final String userId = "671ae6cdaf93fdd4ffd34894"; // Asegúrate de pasar el ID del usuario correcto aquí
+  final String userId = "671ae6cdaf93fdd4ffd34894"; // ID del usuario
+  final LocalAuthentication auth = LocalAuthentication();
 
   Future<void> actualizarUsuario() async {
     final url = Uri.parse('http://192.168.1.105:3000/api/v1/usuarios/$userId');
@@ -43,9 +44,33 @@ class EditarPerfilState extends State<EditarPerfil> {
       _showUpdateSuccessSnackbar(context);
     } else {
       print("Error al actualizar usuario: ${response.body}");
-      // Mostrar error al usuario
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al actualizar el perfil')),
+      );
+    }
+  }
+
+  Future<void> _authenticateAndSubmit() async {
+    try {
+      final isAuthenticated = await auth.authenticate(
+        localizedReason: 'Por favor verifica tu identidad con tu huella dactilar',
+        options: const AuthenticationOptions(
+          useErrorDialogs: true,
+          stickyAuth: true,
+        ),
+      );
+
+      if (isAuthenticated) {
+        await actualizarUsuario();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Autenticación fallida. No se realizó la actualización.')),
+        );
+      }
+    } on PlatformException catch (e) {
+      print("Error en autenticación: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al intentar autenticarse')),
       );
     }
   }
@@ -83,9 +108,9 @@ class EditarPerfilState extends State<EditarPerfil> {
                   children: [
                     Expanded(
                       child: _buildDropdownField(
-                        'País', 
+                        'Colonia', 
                         paisSeleccionado, 
-                        ['México', 'Estados Unidos', 'Canadá'], 
+                        ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco','Centro', '18 de Marzo', 'Los Manguitos','El Suspiro'], 
                         (newValue) {
                           setState(() {
                             paisSeleccionado = newValue!;
@@ -121,7 +146,7 @@ class EditarPerfilState extends State<EditarPerfil> {
               ],
             ),
             ElevatedButton(
-              onPressed: actualizarUsuario,
+              onPressed: _authenticateAndSubmit, // Cambiado para autenticar y luego actualizar
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: const Size(double.infinity, 50),
