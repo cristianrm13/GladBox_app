@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:GvApp/screen/editar_perfil.dart'; // Correct import
 
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
@@ -14,7 +14,6 @@ class PerfilScreen extends StatelessWidget {
           icon: const Icon(Icons.notifications_none, color: Colors.black),
           onPressed: () {
             // Acción del botón de notificaciones
-            
           },
         ),
         actions: [
@@ -87,10 +86,16 @@ class PerfilScreen extends StatelessWidget {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.edit_note),
-                    title: const Text('Editar informacion del perfil'),
+                    title: const Text('Editar información del perfil'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
-                      // Acción para editar perfil
+                      // Navega a la pantalla de edición de perfil
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditarPerfil(), // Corregido
+                        ),
+                      );
                     },
                   ),
                   const Divider(),
