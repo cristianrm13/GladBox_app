@@ -25,7 +25,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> obtenerDatosUsuario() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.1.105:3000/api/v1/usuarios/$userId'),
+        Uri.parse('http://192.168.1.104:3000/api/v1/usuarios/$userId'),
       );
 
       if (response.statusCode == 200) {
@@ -150,7 +150,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.security),
-                    title: const Text('Seguridad'),
+                    title: const Text('Servicios de emergencia'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {},
                   ),
