@@ -1,8 +1,47 @@
+import 'package:GvApp/screen/editar_perfil.dart';
 import 'package:flutter/material.dart';
-import 'package:GvApp/screen/editar_perfil.dart'; // Correct import
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class PerfilScreen extends StatelessWidget {
+class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
+
+  @override
+  _PerfilScreenState createState() => _PerfilScreenState();
+}
+
+class _PerfilScreenState extends State<PerfilScreen> {
+  String nombre = '';
+  String email = '';
+  String telefono = '';
+
+  @override
+  void initState() {
+    super.initState();
+    obtenerDatosUsuario();
+  }
+  final String userId = "671ae6cdaf93fdd4ffd34894"; // Asegúrate de pasar el ID del usuario correcto aquí
+
+  Future<void> obtenerDatosUsuario() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://192.168.1.105:3000/api/v1/usuarios/$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          nombre = data['nombre'] ?? 'Nombre desconocido';
+          email = data['correo'] ?? 'Email desconocido';
+          telefono = data['telefono'] ?? 'Teléfono desconocido';
+        });
+      } else {
+        throw Exception('Error al obtener los datos del usuario');
+      }
+    } catch (error) {
+      print('Error en obtenerDatosUsuario: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,22 +51,16 @@ class PerfilScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.notifications_none, color: Colors.black),
-          onPressed: () {
-            // Acción del botón de notificaciones
-          },
+          onPressed: () {},
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_backup_restore, color: Colors.black),
-            onPressed: () {
-              // Acción del botón de restaurar
-            },
+            onPressed: () {},
           ),
           IconButton(
             icon: const Icon(Icons.more_vert, color: Colors.black),
-            onPressed: () {
-              // Acción del botón de más opciones
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -37,41 +70,37 @@ class PerfilScreen extends StatelessWidget {
             // Header
             Container(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              child: const Column(
+              child: Column(
                 children: [
                   Stack(
                     children: [
-                      CircleAvatar(
+                      const CircleAvatar(
                         radius: 50,
-                        backgroundImage: NetworkImage(
-                            'https://via.placeholder.com/150'), // Imagen de ejemplo
+                        backgroundImage: NetworkImage('https://via.placeholder.com/150'),
                       ),
                       Positioned(
                         bottom: 0,
                         right: 0,
-                        child: CircleAvatar(
+                        child: const CircleAvatar(
                           backgroundColor: Colors.white,
                           radius: 20,
-                          child: Icon(
-                            Icons.edit,
-                            color: Colors.black,
-                          ),
+                          child: Icon(Icons.edit, color: Colors.black),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
-                    'Nombre',
-                    style: TextStyle(
+                    nombre,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Text(
-                    'youremail@domain.com | +01 234 567 89',
-                    style: TextStyle(color: Colors.grey),
+                    'Email: $email | Teléfono: $telefono',
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
@@ -93,7 +122,7 @@ class PerfilScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => EditarPerfil(), // Corregido
+                          builder: (context) => const EditarPerfil(), // Asegúrate de implementar esta pantalla
                         ),
                       );
                     },
@@ -106,9 +135,7 @@ class PerfilScreen extends StatelessWidget {
                       'ON',
                       style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                     ),
-                    onTap: () {
-                      // Acción para notificaciones
-                    },
+                    onTap: () {},
                   ),
                 ],
               ),
@@ -125,9 +152,7 @@ class PerfilScreen extends StatelessWidget {
                     leading: const Icon(Icons.security),
                     title: const Text('Seguridad'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      // Acción para seguridad
-                    },
+                    onTap: () {},
                   ),
                   const Divider(),
                   ListTile(
@@ -137,9 +162,7 @@ class PerfilScreen extends StatelessWidget {
                       'Light mode',
                       style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
                     ),
-                    onTap: () {
-                      // Acción para cambiar tema
-                    },
+                    onTap: () {},
                   ),
                 ],
               ),
@@ -156,27 +179,21 @@ class PerfilScreen extends StatelessWidget {
                     leading: const Icon(Icons.help_outline),
                     title: const Text('Help & Support'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      // Acción para ayuda
-                    },
+                    onTap: () {},
                   ),
                   const Divider(),
                   ListTile(
                     leading: const Icon(Icons.contact_mail_outlined),
                     title: const Text('Contact us'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      // Acción para contacto
-                    },
+                    onTap: () {},
                   ),
                   const Divider(),
                   ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined),
                     title: const Text('Privacy policy'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      // Acción para políticas de privacidad
-                    },
+                    onTap: () {},
                   ),
                 ],
               ),

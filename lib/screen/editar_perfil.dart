@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class EditarPerfil extends StatefulWidget {
   const EditarPerfil({super.key});
@@ -18,6 +20,36 @@ class EditarPerfilState extends State<EditarPerfil> {
   String paisSeleccionado = 'México';
   String generoSeleccionado = 'Género';
 
+  // ID del usuario (deberás obtener este valor dinámicamente)
+  final String userId = "671ae6cdaf93fdd4ffd34894"; // Asegúrate de pasar el ID del usuario correcto aquí
+
+  Future<void> actualizarUsuario() async {
+    final url = Uri.parse('http://192.168.1.105:3000/api/v1/usuarios/$userId');
+    
+    final response = await http.put(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'nombre': nombreController.text,
+        'correo': emailController.text,
+        'contrasena': contrasenaController.text,
+        'telefono': telefonoController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      _showUpdateSuccessSnackbar(context);
+    } else {
+      print("Error al actualizar usuario: ${response.body}");
+      // Mostrar error al usuario
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al actualizar el perfil')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,10 +57,10 @@ class EditarPerfilState extends State<EditarPerfil> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
+        title: const Text(
           'Editar perfil',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
@@ -46,7 +78,7 @@ class EditarPerfilState extends State<EditarPerfil> {
                 _buildTextField('Contraseña', obscureText: true, controller: contrasenaController),
                 _buildTextField('Email', controller: emailController),
                 _buildTextField('Teléfono', controller: telefonoController),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   children: [
                     Expanded(
@@ -61,7 +93,7 @@ class EditarPerfilState extends State<EditarPerfil> {
                         }
                       ),
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _buildDropdownField(
                         'Género', 
@@ -76,41 +108,28 @@ class EditarPerfilState extends State<EditarPerfil> {
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildTextField(
                   'Dirección',
                   controller: direccionController,
                   onTap: () {
                     if (direccionController.text == 'Dirección') {
-                      direccionController.clear(); // Borra el texto por defecto
+                      direccionController.clear();
                     }
                   },
                 ),
               ],
             ),
             ElevatedButton(
-              onPressed: () {
-                // Aquí puedes acceder a los valores de los controladores
-                print("Nombre: ${nombreController.text}");
-                print("Usuario: ${usuarioController.text}");
-                print("Contraseña: ${contrasenaController.text}");
-                print("Email: ${emailController.text}");
-                print("Teléfono: ${telefonoController.text}");
-                print("Dirección: ${direccionController.text}");
-                print("País: $paisSeleccionado");
-                print("Género: $generoSeleccionado");
-
-                // Mostrar el SnackBar
-                _showUpdateSuccessSnackbar(context);
-              },
+              onPressed: actualizarUsuario,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: Text(
+              child: const Text(
                 'CONFIRMAR',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
@@ -122,18 +141,13 @@ class EditarPerfilState extends State<EditarPerfil> {
   }
 
   void _showUpdateSuccessSnackbar(BuildContext context) {
-    final snackBar = SnackBar(
+    const snackBar = SnackBar(
       content: Text('Actualización exitosa'),
-      duration: Duration(seconds: 5), // Duración del SnackBar
+      duration: Duration(seconds: 5),
     );
-
-    // Mostrar el SnackBar
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-    Future.delayed(Duration(seconds: 5), () {
-      Navigator.pop(context); // Regresa a la pantalla anterior (perfil)
-      // O si tienes una ruta específica:
-      // Navigator.of(context).pushReplacementNamed('/perfil');
+    Future.delayed(const Duration(seconds: 5), () {
+      Navigator.pop(context);
     });
   }
 
