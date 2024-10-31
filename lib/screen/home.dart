@@ -1,3 +1,4 @@
+// home.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -5,6 +6,7 @@ import 'package:GvApp/screen/location_status.dart';
 import 'package:GvApp/screen/notificaciones.dart';
 import 'package:GvApp/screen/perfil.dart';
 import 'package:GvApp/screen/formularioReporte.dart';
+import 'package:GvApp/screen/extras/ad_banner.dart'; // Importa el widget del anuncio
 
 class HomeScreenG extends StatelessWidget {
   const HomeScreenG({super.key});
@@ -116,6 +118,8 @@ class HomeScreenG extends StatelessWidget {
               },
             ),
           ),
+          // Widget del anuncio en la parte inferior
+          AdBanner(),
         ],
       ),
     );
