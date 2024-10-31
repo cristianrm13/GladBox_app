@@ -19,7 +19,7 @@ class EditarPerfilState extends State<EditarPerfil> {
   final TextEditingController telefonoController = TextEditingController();
   final TextEditingController direccionController = TextEditingController();
 
-  String paisSeleccionado = 'México';
+  String paisSeleccionado = 'San Jacinto';
   String generoSeleccionado = 'Género';
 
   final String userId = "671ae6cdaf93fdd4ffd34894"; // ID del usuario
@@ -32,7 +32,7 @@ class EditarPerfilState extends State<EditarPerfil> {
   }
 
   Future<void> cargarDatosUsuario() async {
-    final url = Uri.parse('http://192.168.1.104:3000/api/v1/usuarios/$userId');
+    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
 
     try {
       final response = await http.get(url);
@@ -46,7 +46,7 @@ class EditarPerfilState extends State<EditarPerfil> {
           contrasenaController.text = data['contrasena'];
           telefonoController.text = data['telefono'];
           direccionController.text = data['direccion'] ?? 'Dirección';
-          paisSeleccionado = data['pais'] ?? 'México';
+          paisSeleccionado = data['colonia'] ?? 'San Jacinto';
           generoSeleccionado = data['genero'] ?? 'Género';
         });
       } else {
@@ -58,7 +58,7 @@ class EditarPerfilState extends State<EditarPerfil> {
   }
 
   Future<void> actualizarUsuario() async {
-    final url = Uri.parse('http://192.168.1.104:3000/api/v1/usuarios/$userId');
+    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
     
     final response = await http.put(
       url,
@@ -144,7 +144,7 @@ Future<void> _authenticateAndSubmit() async {
                       child: _buildDropdownField(
                         'País', 
                         paisSeleccionado, 
-                        ['México', 'Estados Unidos', 'Canadá'], 
+                         ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco','Centro', '18 de Marzo', 'Los Manguitos','El Suspiro'], 
                         (newValue) {
                           setState(() {
                             paisSeleccionado = newValue!;

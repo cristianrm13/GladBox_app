@@ -10,7 +10,7 @@ class LocationStatusScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationStatusScreen> {
-  String _locationMessage = "Presiona el botón para obtener la ubicación";
+  String _locationMessage = "Presiona el botón para obtener tu ubicación";
   double? _latitude;
   double? _longitude;
 
@@ -49,7 +49,7 @@ class _LocationScreenState extends State<LocationStatusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('GPS Location')),
+      appBar: AppBar(title: const Text('Ubicacion Actual')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
