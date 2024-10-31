@@ -21,14 +21,15 @@ class EditarPerfilState extends State<EditarPerfil> {
 
   String paisSeleccionado = 'San Jacinto';
   String generoSeleccionado = 'Género';
+  bool obscureText = true;
 
-  final String userId = "671ae6cdaf93fdd4ffd34894"; // ID del usuario
+  final String userId = "671ae6cdaf93fdd4ffd34894";
   final LocalAuthentication auth = LocalAuthentication();
 
   @override
   void initState() {
     super.initState();
-    cargarDatosUsuario(); // Cargar datos al iniciar
+    cargarDatosUsuario();
   }
 
   Future<void> cargarDatosUsuario() async {
@@ -59,7 +60,7 @@ class EditarPerfilState extends State<EditarPerfil> {
 
   Future<void> actualizarUsuario() async {
     final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
-    
+
     final response = await http.put(
       url,
       headers: <String, String>{
@@ -70,7 +71,6 @@ class EditarPerfilState extends State<EditarPerfil> {
         'correo': emailController.text,
         'contrasena': contrasenaController.text,
         'telefono': telefonoController.text,
-        // Otros campos opcionales
       }),
     );
 
@@ -84,7 +84,7 @@ class EditarPerfilState extends State<EditarPerfil> {
     }
   }
 
-Future<void> _authenticateAndSubmit() async {
+  Future<void> _authenticateAndSubmit() async {
     try {
       final isAuthenticated = await auth.authenticate(
         localizedReason: 'Por favor verifica tu identidad con tu huella dactilar',
@@ -134,7 +134,16 @@ Future<void> _authenticateAndSubmit() async {
               children: [
                 _buildTextField('Nombre completo', controller: nombreController),
                 _buildTextField('Nombre de usuario', controller: usuarioController),
-                _buildTextField('Contraseña', obscureText: true, controller: contrasenaController),
+                _buildTextField(
+                  'Contraseña',
+                  controller: contrasenaController,
+                  obscureText: obscureText,
+                  onSuffixTap: () {
+                    setState(() {
+                      obscureText = !obscureText;
+                    });
+                  },
+                ),
                 _buildTextField('Email', controller: emailController),
                 _buildTextField('Teléfono', controller: telefonoController),
                 const SizedBox(height: 20),
@@ -142,9 +151,9 @@ Future<void> _authenticateAndSubmit() async {
                   children: [
                     Expanded(
                       child: _buildDropdownField(
-                        'País', 
-                        paisSeleccionado, 
-                         ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco','Centro', '18 de Marzo', 'Los Manguitos','El Suspiro'], 
+                        'País',
+                        paisSeleccionado,
+                        ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco','Centro', '18 de Marzo', 'Los Manguitos','El Suspiro'],
                         (newValue) {
                           setState(() {
                             paisSeleccionado = newValue!;
@@ -155,8 +164,8 @@ Future<void> _authenticateAndSubmit() async {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildDropdownField(
-                        'Género', 
-                        generoSeleccionado, 
+                        'Género',
+                        generoSeleccionado,
                         ['Género', 'Hombre', 'Mujer', 'Otro'],
                         (newValue) {
                           setState(() {
@@ -179,17 +188,8 @@ Future<void> _authenticateAndSubmit() async {
                 ),
               ],
             ),
-            /* ElevatedButton(
-              onPressed: actualizarUsuario,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ), */
-              ElevatedButton(
-              onPressed: _authenticateAndSubmit, // Cambiado para autenticar y luego actualizar
+            ElevatedButton(
+              onPressed: _authenticateAndSubmit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: const Size(double.infinity, 50),
@@ -214,29 +214,34 @@ Future<void> _authenticateAndSubmit() async {
       duration: Duration(seconds: 5),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pop(context);
-    });
   }
 
-  Widget _buildTextField(String label, {bool obscureText = false, required TextEditingController controller, VoidCallback? onTap}) {
+  Widget _buildTextField(String label, {bool obscureText = false, required TextEditingController controller, VoidCallback? onSuffixTap, VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
         controller: controller,
         obscureText: obscureText,
+        onTap: onTap,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
           ),
+          suffixIcon: onSuffixTap != null
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: onSuffixTap,
+                )
+              : null,
         ),
-        onTap: onTap,
       ),
     );
   }
 
-  Widget _buildDropdownField(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownField(String label, String value, List<String> items, ValueChanged<String?>? onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: InputDecoration(

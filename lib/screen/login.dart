@@ -3,8 +3,17 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-class LoginScreens extends StatelessWidget {
+class LoginScreens extends StatefulWidget {
   const LoginScreens({super.key});
+
+  @override
+  _LoginScreensState createState() => _LoginScreensState();
+}
+
+class _LoginScreensState extends State<LoginScreens> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool _isObscure = true; // Estado para controlar la visibilidad de la contraseña
 
   // Función para guardar el token en SharedPreferences
   Future<void> saveToken(String token) async {
@@ -16,7 +25,7 @@ class LoginScreens extends StatelessWidget {
   Future<void> login(BuildContext context, String correo, String contrasena) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/login'), // Cambia a tu URL del servidor
+        Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/login'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({'correo': correo, 'contrasena': contrasena}),
       );
@@ -25,14 +34,10 @@ class LoginScreens extends StatelessWidget {
         final data = jsonDecode(response.body);
         final token = data['token'];
 
-        // Guardar token en SharedPreferences
         await saveToken(token);
-
-        // Navegar a la pantalla principal después de iniciar sesión
         Navigator.pushReplacementNamed(context, '/home');
         print('Inicio de sesión exitoso. Token: $token');
       } else {
-        // Mostrar error al usuario
         final errorData = jsonDecode(response.body);
         final errorMessage = errorData['error'] ?? 'Error de inicio de sesión';
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,9 +54,6 @@ class LoginScreens extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -83,12 +85,22 @@ class LoginScreens extends StatelessWidget {
               const SizedBox(height: 10),
               TextFormField(
                 controller: passwordController,
-                obscureText: true,
+                obscureText: _isObscure, // Utiliza el estado para mostrar u ocultar la contraseña
                 decoration: InputDecoration(
                   hintText: 'Contraseña',
                   labelText: 'Contraseña',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isObscure ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isObscure = !_isObscure;
+                      });
+                    },
                   ),
                 ),
               ),
