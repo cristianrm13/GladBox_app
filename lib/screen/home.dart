@@ -1,10 +1,24 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:GvApp/screen/location_status.dart';
 import 'package:GvApp/screen/notificaciones.dart';
 import 'package:GvApp/screen/perfil.dart';
-import 'package:flutter/material.dart';
-import 'package:GvApp/screen/formularioReporte.dart'; 
+import 'package:GvApp/screen/formularioReporte.dart';
 
 class HomeScreenG extends StatelessWidget {
   const HomeScreenG({super.key});
+
+  Future<List<dynamic>> fetchQuejas() async {
+    final url = Uri.parse('http://192.168.0.16:3000/api/v1/quejas/');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error al obtener quejas: ${response.statusCode}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,50 +27,55 @@ class HomeScreenG extends StatelessWidget {
         backgroundColor: Colors.green,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Image.asset('assets/Gladbox.png'), 
+          child: Image.asset('assets/Gladbox.png'),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              // Acción para agregar una publicación o cualquier otra acción
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const FormularioReporte()),
-                 );
+              );
             },
           ),
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              // Acción para notificaciones
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const NotificationScreen()),
-                 );
+              );
             },
           ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Acción para ajustes
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const PerfilScreen()),
-                 );
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.pin_drop_sharp),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LocationStatusScreen()),
+              );
             },
           ),
         ],
       ),
       body: Column(
         children: [
-          // Barra de entrada para crear una nueva publicación
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
                 const CircleAvatar(
-                  backgroundImage: AssetImage('assets/USER.jpg'), // Cambia la imagen del perfil
+                  backgroundImage: AssetImage('assets/USER.jpg'),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -76,47 +95,33 @@ class HomeScreenG extends StatelessWidget {
             ),
           ),
           const Divider(),
-          // Lista de publicaciones
           Expanded(
-            child: ListView.builder(
-              itemCount: 2, // Cambia este valor por el número de publicaciones que tengas
-              itemBuilder: (context, index) {
-                return _buildPostCard();
+            child: FutureBuilder<List<dynamic>>(
+              future: fetchQuejas(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else {
+                  final quejas = snapshot.data ?? [];
+                  return ListView.builder(
+                    itemCount: quejas.length,
+                    itemBuilder: (context, index) {
+                      final queja = quejas[index];
+                      return _buildPostCard(queja);
+                    },
+                  );
+                }
               },
             ),
           ),
         ],
       ),
-/*       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.green,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black54,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.monetization_on),
-            label: 'Trans.',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.feed),
-            label: 'Feeds',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report),
-            label: 'Reportar',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ), */
     );
   }
 
-  Widget _buildPostCard() {
+  Widget _buildPostCard(Map<String, dynamic> queja) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -126,45 +131,55 @@ class HomeScreenG extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Información del usuario y tiempo
-            const Row(
+            Row(
               children: [
-                CircleAvatar(
-                  backgroundImage: AssetImage('assets/USER.jpg'), // Imagen del usuario
+                const CircleAvatar(
+                  backgroundImage: AssetImage('assets/USER.jpg'),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Juan Perez',
+                    const Text(
+                      'Usuario Anónimo',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '08:39 am',
-                      style: TextStyle(color: Colors.grey),
+                      queja['dateCreated'] ?? '',
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 10),
-            // Texto de la publicación
-            const Text(
-              'Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Fringilla Natoque Id Aenean.',
-              style: TextStyle(fontSize: 16),
+            Text(
+              queja['title'] ?? 'Sin título',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            // Imagen de la publicación
+            Text(
+              queja['description'] ?? 'Sin descripción',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Categoría: ${queja['category']}',
+              style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+            ),
+            Text(
+              'Estatus: ${queja['status']}',
+              style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+            ),
+            const SizedBox(height: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Image.asset(
-                'assets/Gladbox.png', // Cambia la imagen de la publicación
+                'assets/Gladbox.png',
                 fit: BoxFit.cover,
               ),
             ),
             const SizedBox(height: 10),
-            // Interacciones de la publicación (likes y comentarios)
             const Row(
               children: [
                 Icon(Icons.thumb_up, color: Colors.blue),

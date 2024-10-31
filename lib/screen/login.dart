@@ -1,11 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:GvApp/screen/sign_up.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class LoginScreens extends StatelessWidget {
   const LoginScreens({super.key});
 
+  // Función para guardar el token en SharedPreferences
+  Future<void> saveToken(String token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
+
+  // Función de inicio de sesión
+  Future<void> login(BuildContext context, String correo, String contrasena) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/login'), // Cambia a tu URL del servidor
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({'correo': correo, 'contrasena': contrasena}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['token'];
+
+        // Guardar token en SharedPreferences
+        await saveToken(token);
+
+        // Navegar a la pantalla principal después de iniciar sesión
+        Navigator.pushReplacementNamed(context, '/home');
+        print('Inicio de sesión exitoso. Token: $token');
+      } else {
+        // Mostrar error al usuario
+        final errorData = jsonDecode(response.body);
+        final errorMessage = errorData['error'] ?? 'Error de inicio de sesión';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
+    } catch (e) {
+      print('Error de conexión: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al conectar con el servidor')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -25,6 +71,7 @@ class LoginScreens extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               TextFormField(
+                controller: emailController,
                 decoration: InputDecoration(
                   hintText: 'ex: jon.smith@email.com',
                   labelText: 'Email',
@@ -35,6 +82,7 @@ class LoginScreens extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               TextFormField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Contraseña',
@@ -47,11 +95,11 @@ class LoginScreens extends StatelessWidget {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Aquí va la lógica de inicio de sesión
+                  login(context, emailController.text, passwordController.text);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
-                  minimumSize: const Size(double.infinity, 50), 
+                  minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
@@ -65,7 +113,7 @@ class LoginScreens extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   IconButton(
-                    icon: Image.asset('assets/google.png'), 
+                    icon: Image.asset('assets/google.png'),
                     iconSize: 40,
                     onPressed: () {
                       // Lógica de inicio de sesión con Google
@@ -73,7 +121,7 @@ class LoginScreens extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   IconButton(
-                    icon: Image.asset('assets/facebook.png'), 
+                    icon: Image.asset('assets/facebook.png'),
                     iconSize: 40,
                     onPressed: () {
                       // Lógica de inicio de sesión con Facebook
@@ -81,7 +129,7 @@ class LoginScreens extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   IconButton(
-                    icon: Image.asset('assets/X.png'), // Asegúrate de tener el icono de Twitter
+                    icon: Image.asset('assets/X.png'),
                     iconSize: 40,
                     onPressed: () {
                       // Lógica de inicio de sesión con Twitter
@@ -92,11 +140,7 @@ class LoginScreens extends StatelessWidget {
               const SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
-                  // Aquí se realiza la navegación a la pantalla de registro
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignUpScreen()), // SignUpScreen es la pantalla de registro
-                  );
+                  Navigator.pushNamed(context, '/signup');
                 },
                 child: const Text(
                   "¿No tienes una cuenta? INSCRIBIRSE",

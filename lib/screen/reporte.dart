@@ -137,7 +137,7 @@ Future<void> _pickImage() async {
                 maxLines: 5,
                 decoration: InputDecoration(
                   hintText:
-                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...',
+                      'Redacta una descripcion del problema...',
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(

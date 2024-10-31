@@ -17,15 +17,48 @@ class EditarPerfilState extends State<EditarPerfil> {
   final TextEditingController contrasenaController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController telefonoController = TextEditingController();
-  final TextEditingController direccionController = TextEditingController(text: 'Dirección');
+  final TextEditingController direccionController = TextEditingController();
 
   String paisSeleccionado = 'San Jacinto';
   String generoSeleccionado = 'Género';
+
   final String userId = "671ae6cdaf93fdd4ffd34894"; // ID del usuario
   final LocalAuthentication auth = LocalAuthentication();
 
+  @override
+  void initState() {
+    super.initState();
+    cargarDatosUsuario(); // Cargar datos al iniciar
+  }
+
+  Future<void> cargarDatosUsuario() async {
+    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        setState(() {
+          nombreController.text = data['nombre'];
+          emailController.text = data['correo'];
+          contrasenaController.text = data['contrasena'];
+          telefonoController.text = data['telefono'];
+          direccionController.text = data['direccion'] ?? 'Dirección';
+          paisSeleccionado = data['colonia'] ?? 'San Jacinto';
+          generoSeleccionado = data['genero'] ?? 'Género';
+        });
+      } else {
+        print("Error al cargar datos de usuario: ${response.body}");
+      }
+    } catch (e) {
+      print("Error de red: $e");
+    }
+  }
+
   Future<void> actualizarUsuario() async {
-    final url = Uri.parse('http://192.168.1.105:3000/api/v1/usuarios/$userId');
+    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
     
     final response = await http.put(
       url,
@@ -37,6 +70,7 @@ class EditarPerfilState extends State<EditarPerfil> {
         'correo': emailController.text,
         'contrasena': contrasenaController.text,
         'telefono': telefonoController.text,
+        // Otros campos opcionales
       }),
     );
 
@@ -50,7 +84,7 @@ class EditarPerfilState extends State<EditarPerfil> {
     }
   }
 
-  Future<void> _authenticateAndSubmit() async {
+Future<void> _authenticateAndSubmit() async {
     try {
       final isAuthenticated = await auth.authenticate(
         localizedReason: 'Por favor verifica tu identidad con tu huella dactilar',
@@ -108,9 +142,9 @@ class EditarPerfilState extends State<EditarPerfil> {
                   children: [
                     Expanded(
                       child: _buildDropdownField(
-                        'Colonia', 
+                        'País', 
                         paisSeleccionado, 
-                        ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco','Centro', '18 de Marzo', 'Los Manguitos','El Suspiro'], 
+                         ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco','Centro', '18 de Marzo', 'Los Manguitos','El Suspiro'], 
                         (newValue) {
                           setState(() {
                             paisSeleccionado = newValue!;
@@ -145,7 +179,16 @@ class EditarPerfilState extends State<EditarPerfil> {
                 ),
               ],
             ),
-            ElevatedButton(
+            /* ElevatedButton(
+              onPressed: actualizarUsuario,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ), */
+              ElevatedButton(
               onPressed: _authenticateAndSubmit, // Cambiado para autenticar y luego actualizar
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
