@@ -6,8 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.heycap"
-    compileSdkVersion 34//compileSdk = flutter.compileSdkVersion
+    // Se especifica el espacio de nombres (namespace) para la aplicación
+    namespace = "com.example.heycap" // Cambia esto según tus necesidades (anuncios o heycap)
+    
+    // Establece la versión del SDK de compilación y la versión NDK
+    compileSdkVersion 34//compileSdk = flutter.compileSdkVersion // Puedes usar 34 directamente si lo prefieres
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -32,8 +35,8 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Agrega tu propia configuración de firma para la construcción de lanzamiento.
+            // Firmando con las claves de depuración por ahora, para que funcione `flutter run --release`.
             signingConfig = signingConfigs.debug
         }
     }
