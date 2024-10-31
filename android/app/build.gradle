@@ -6,8 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.heycap"
-    compileSdk = flutter.compileSdkVersion
+    // Se especifica el espacio de nombres (namespace) para la aplicación
+    namespace = "com.example.heycap" // Cambia esto según tus necesidades (anuncios o heycap)
+    
+    // Establece la versión del SDK de compilación y la versión NDK
+    compileSdk = flutter.compileSdkVersion // Puedes usar 34 directamente si lo prefieres
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -20,20 +23,20 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.heycap"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        // Especifica el ID de la aplicación único
+        applicationId = "com.example.heycap" // Cambia esto según tus necesidades (anuncios o heycap)
+        
+        // Actualiza estos valores según las necesidades de tu aplicación
+        minSdk = flutter.minSdkVersion // Puedes usar 21 directamente si lo prefieres
+        targetSdk = flutter.targetSdkVersion // Puedes usar 34 directamente si lo prefieres
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Agrega tu propia configuración de firma para la construcción de lanzamiento.
+            // Firmando con las claves de depuración por ahora, para que funcione `flutter run --release`.
             signingConfig = signingConfigs.debug
         }
     }
