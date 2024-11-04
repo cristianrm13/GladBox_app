@@ -21,12 +21,10 @@ dependencies:
   connectivity_plus: ^4.0.1
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.0.0
-  #qr_code_scanner: ^1.0.1
   image_picker: ^1.1.1
   mobile_scanner: ^6.0.1
   sensors_plus: ^6.1.0
   google_mobile_ads: ^5.2.0
-  #local_auth: ^2.3.0
   local_auth: ^2.0.8
 
 
