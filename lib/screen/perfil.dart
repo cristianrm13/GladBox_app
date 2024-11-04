@@ -1,4 +1,6 @@
 import 'package:GvApp/screen/editar_perfil.dart';
+import 'package:GvApp/screen/extras/politica_privacidad.dart';
+import 'package:GvApp/screen/extras/contact_us.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -25,7 +27,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> obtenerDatosUsuario() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId'),
+        Uri.parse('http://192.168.25.135:3000/api/v1/usuarios/$userId'),
       );
 
       if (response.statusCode == 200) {
@@ -186,14 +188,28 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     leading: const Icon(Icons.contact_mail_outlined),
                     title: const Text('Contact us'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
+                    onTap: () {
+                         Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ContactUsScreen(),
+                        ),
+                      );
+                    },
                   ),
                   const Divider(),
                   ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined),
                     title: const Text('Privacy policy'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PoliticaPrivacidad(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
