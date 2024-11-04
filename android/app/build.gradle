@@ -10,7 +10,8 @@ android {
     namespace = "com.example.heycap" // Ajusta este nombre según tus necesidades
     
     // Establece la versión del SDK de compilación y la versión NDK
-    compileSdk = 34 // Puedes también usar flutter.compileSdkVersion si está configurado
+    compileSdk = flutter.compileSdkVersion // Puedes usar 34 directamente si lo prefieres
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -23,13 +24,13 @@ android {
 
     defaultConfig {
         // Especifica el ID de la aplicación único
-        applicationId = "com.example.heycap" // Ajusta este nombre si es necesario
+        applicationId = "com.example.heycap" // Cambia esto según tus necesidades (anuncios o heycap)
         
-        // Configuración de versiones de SDK
-        minSdk = 21 // También puedes usar flutter.minSdkVersion si está configurado
-        targetSdk = 34 // También puedes usar flutter.targetSdkVersion si está configurado
-        versionCode = 1
-        versionName = "1.0"
+        // Actualiza estos valores según las necesidades de tu aplicación
+        minSdk = flutter.minSdkVersion // Puedes usar 21 directamente si lo prefieres
+        targetSdk = flutter.targetSdkVersion // Puedes usar 34 directamente si lo prefieres
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
     }
 
     buildTypes {

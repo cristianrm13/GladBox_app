@@ -17,16 +17,50 @@ class EditarPerfilState extends State<EditarPerfil> {
   final TextEditingController contrasenaController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController telefonoController = TextEditingController();
-  final TextEditingController direccionController = TextEditingController(text: 'Dirección');
+  final TextEditingController direccionController = TextEditingController();
 
   String paisSeleccionado = 'San Jacinto';
   String generoSeleccionado = 'Género';
-  final String userId = "671ae6cdaf93fdd4ffd34894"; // ID del usuario
+  bool obscureText = true;
+
+  final String userId = "671ae6cdaf93fdd4ffd34894";
   final LocalAuthentication auth = LocalAuthentication();
 
+  @override
+  void initState() {
+    super.initState();
+    cargarDatosUsuario();
+  }
+
+  Future<void> cargarDatosUsuario() async {
+    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        setState(() {
+          nombreController.text = data['nombre'];
+          emailController.text = data['correo'];
+          contrasenaController.text = data['contrasena'];
+          telefonoController.text = data['telefono'];
+          direccionController.text = data['direccion'] ?? 'Dirección';
+          paisSeleccionado = data['colonia'] ?? 'San Jacinto';
+          generoSeleccionado = data['genero'] ?? 'Género';
+        });
+      } else {
+        print("Error al cargar datos de usuario: ${response.body}");
+      }
+    } catch (e) {
+      print("Error de red: $e");
+    }
+  }
+
   Future<void> actualizarUsuario() async {
-    final url = Uri.parse('http://192.168.1.105:3000/api/v1/usuarios/$userId');
-    
+    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
+
     final response = await http.put(
       url,
       headers: <String, String>{
@@ -100,7 +134,16 @@ class EditarPerfilState extends State<EditarPerfil> {
               children: [
                 _buildTextField('Nombre completo', controller: nombreController),
                 _buildTextField('Nombre de usuario', controller: usuarioController),
-                _buildTextField('Contraseña', obscureText: true, controller: contrasenaController),
+                _buildTextField(
+                  'Contraseña',
+                  controller: contrasenaController,
+                  obscureText: obscureText,
+                  onSuffixTap: () {
+                    setState(() {
+                      obscureText = !obscureText;
+                    });
+                  },
+                ),
                 _buildTextField('Email', controller: emailController),
                 _buildTextField('Teléfono', controller: telefonoController),
                 const SizedBox(height: 20),
@@ -108,9 +151,9 @@ class EditarPerfilState extends State<EditarPerfil> {
                   children: [
                     Expanded(
                       child: _buildDropdownField(
-                        'Colonia', 
-                        paisSeleccionado, 
-                        ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco','Centro', '18 de Marzo', 'Los Manguitos','El Suspiro'], 
+                        'País',
+                        paisSeleccionado,
+                        ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco','Centro', '18 de Marzo', 'Los Manguitos','El Suspiro'],
                         (newValue) {
                           setState(() {
                             paisSeleccionado = newValue!;
@@ -121,8 +164,8 @@ class EditarPerfilState extends State<EditarPerfil> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildDropdownField(
-                        'Género', 
-                        generoSeleccionado, 
+                        'Género',
+                        generoSeleccionado,
                         ['Género', 'Hombre', 'Mujer', 'Otro'],
                         (newValue) {
                           setState(() {
@@ -146,7 +189,7 @@ class EditarPerfilState extends State<EditarPerfil> {
               ],
             ),
             ElevatedButton(
-              onPressed: _authenticateAndSubmit, // Cambiado para autenticar y luego actualizar
+              onPressed: _authenticateAndSubmit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: const Size(double.infinity, 50),
@@ -171,29 +214,34 @@ class EditarPerfilState extends State<EditarPerfil> {
       duration: Duration(seconds: 5),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pop(context);
-    });
   }
 
-  Widget _buildTextField(String label, {bool obscureText = false, required TextEditingController controller, VoidCallback? onTap}) {
+  Widget _buildTextField(String label, {bool obscureText = false, required TextEditingController controller, VoidCallback? onSuffixTap, VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
         controller: controller,
         obscureText: obscureText,
+        onTap: onTap,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
           ),
+          suffixIcon: onSuffixTap != null
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: onSuffixTap,
+                )
+              : null,
         ),
-        onTap: onTap,
       ),
     );
   }
 
-  Widget _buildDropdownField(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownField(String label, String value, List<String> items, ValueChanged<String?>? onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: InputDecoration(

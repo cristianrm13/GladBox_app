@@ -1,24 +1,31 @@
+import 'package:GvApp/screen/location_status.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:url_launcher/url_launcher.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:url_launcher/url_launcher.dart';
 import 'package:GvApp/screen/login.dart';
 import 'package:GvApp/screen/home.dart';
-import 'package:GvApp/screen/perfil.dart';
+import 'package:GvApp/screen/perfil.dart';  
 
-final Uri _url = Uri.parse('https://github.com/cristianrm13/APP_practica2.git');
+//final Uri _url = Uri.parse('https://github.com/cristianrm13/APP_practica2.git'); 
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  // Obtener el token de SharedPreferences
+  var token = prefs.getString('token');
+  
+  runApp(MyApp(initialRoute: token != null ? '/home' : '/login'));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'GladBox',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey.shade900),
@@ -28,7 +35,11 @@ class MyApp extends StatelessWidget {
           bodyLarge: TextStyle(color: Colors.black87),
         ),
       ),
-      home: const MainScreen(),
+      initialRoute: initialRoute,
+      routes: {
+        '/login': (context) => const LoginScreens(),
+        '/home': (context) => const MainScreen(), // Ruta que lleva a MainScreen
+      },
     );
   }
 }
@@ -44,55 +55,28 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   late PageController _pageController;
 
-  // Variables para el anuncio
-  late BannerAd _bannerAd;
-  bool _isLoaded = false;
-  final adUnitId = 'ca-app-pub-3940256099942544/6300978111'; // ID del anuncio
-
   // Lista de pantallas
   final List<Widget> _screens = [
-    const LoginScreens(),
     const HomeScreenG(),
     const PerfilScreen(),
+    const LocationStatusScreen(),
   ];
 
   // Función para abrir la URL
-  Future<void> _launchUrl() async {
+/*   Future<void> _launchUrl() async {
     if (!await launchUrl(_url)) {
       throw Exception('No se pudo abrir la URL $_url');
     }
-  }
+  } */
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _selectedIndex); // Inicializa el PageController
-    loadAd(); // Cargar el anuncio al iniciar
-  }
-
-  void loadAd() {
-    _bannerAd = BannerAd(
-      adUnitId: adUnitId,
-      request: const AdRequest(),
-      size: AdSize.banner,
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          debugPrint('$ad loaded.');
-          setState(() {
-            _isLoaded = true; // Cambia el estado cuando el anuncio se carga
-          });
-        },
-        onAdFailedToLoad: (ad, err) {
-          debugPrint('BannerAd failed to load: $err');
-          ad.dispose();
-        },
-      ),
-    )..load();
+    _pageController = PageController(initialPage: _selectedIndex);
   }
 
   @override
   void dispose() {
-    _bannerAd.dispose(); // Liberar el anuncio al salir
     _pageController.dispose();
     super.dispose();
   }
@@ -103,7 +87,7 @@ class _MainScreenState extends State<MainScreen> {
     });
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 100), // Animación de cambio de página
+      duration: const Duration(milliseconds: 100),
       curve: Curves.easeInOut,
     );
   }
@@ -111,44 +95,20 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          PageView(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            physics: const NeverScrollableScrollPhysics(),
-            children: _screens,
-          ),
-          Positioned(
-            top: 25,
-            left: 325,
-            child: FloatingActionButton(
-              onPressed: _launchUrl,
-              tooltip: 'Flutter',
-              backgroundColor: const Color.fromARGB(132, 134, 133, 133),
-              child: const Icon(Icons.circle_outlined, color: Colors.white),
-            ),
-          ),
-          // Mostrar el anuncio si está cargado
-          if (_isLoaded)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: 50, // Altura del banner
-                child: AdWidget(ad: _bannerAd), // Widget del anuncio
-              ),
-            ),
-        ],
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        physics: const NeverScrollableScrollPhysics(),
+        children: _screens,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.login), label: 'Login'),
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outlined), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outlined), label: 'Perfil'),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.black,

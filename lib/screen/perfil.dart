@@ -25,7 +25,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> obtenerDatosUsuario() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.1.105:3000/api/v1/usuarios/$userId'),
+        Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId'),
       );
 
       if (response.statusCode == 200) {
@@ -72,16 +72,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Column(
                 children: [
-                  Stack(
+                  const Stack(
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 50,
                         backgroundImage: NetworkImage('https://via.placeholder.com/150'),
                       ),
                       Positioned(
                         bottom: 0,
                         right: 0,
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           backgroundColor: Colors.white,
                           radius: 20,
                           child: Icon(Icons.edit, color: Colors.black),
@@ -150,16 +150,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.security),
-                    title: const Text('Seguridad'),
+                    title: const Text('Servicios de emergencia'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {},
                   ),
                   const Divider(),
                   ListTile(
                     leading: const Icon(Icons.brightness_6),
-                    title: const Text('Tema'),
+                    title: const Text('cerrar sesion'),
                     trailing: const Text(
-                      'Light mode',
+                      'ir',
                       style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
                     ),
                     onTap: () {},
