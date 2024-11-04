@@ -33,7 +33,7 @@ class EditarPerfilState extends State<EditarPerfil> {
   }
 
   Future<void> cargarDatosUsuario() async {
-    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
+    final url = Uri.parse('http://192.168.25.135:3000/api/v1/usuarios/$userId');
 
     try {
       final response = await http.get(url);
@@ -59,7 +59,7 @@ class EditarPerfilState extends State<EditarPerfil> {
   }
 
   Future<void> actualizarUsuario() async {
-    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
+    final url = Uri.parse('http://192.168.25.135:3000/api/v1/usuarios/$userId');
 
     final response = await http.put(
       url,

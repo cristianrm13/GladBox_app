@@ -21,7 +21,6 @@ dependencies:
   connectivity_plus: ^4.0.1
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.0.0
-  #qr_code_scanner: ^1.0.1
   image_picker: ^1.1.1
   mobile_scanner: ^6.0.1
   sensors_plus: ^6.1.0
@@ -45,5 +44,8 @@ flutter:
     - assets/facebook.png
     - assets/X.png
     - assets/Gladbox.png
+    - assets/cristian.jpeg
+    - assets/luis.jpg
+    - assets/alan.jpg
     #- assets/profile_picture.png
     #- assets/post_image.png
