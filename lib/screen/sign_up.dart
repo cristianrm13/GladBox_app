@@ -15,19 +15,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   // Controladores para cada campo de entrada
   final TextEditingController _nombreController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _correoController = TextEditingController();
   final TextEditingController _contrasenaController = TextEditingController();
+  final TextEditingController _telefonoController = TextEditingController();
   final TextEditingController _confirmcontrasenaController = TextEditingController();
   
   // Función que hace la solicitud HTTP
-  Future<void> registerUser(String nombre, String email, String contrasena) async {
+  Future<void> registerUser(String nombre, String correo, String contrasena, String telefono) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.25.135:3000/api/usuarios'), // Cambia a tu endpoint de registro
+        Uri.parse('http://192.168.25.135:3000/api/v1/usuarios'), 
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "nombre": nombre,
-          "email": email,
+          "correo": correo,
+          "telefono": telefono,
           "contrasena": contrasena,
         }),
       );
@@ -87,15 +89,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
-                    controller: _emailController,
+                    controller: _correoController,
                     decoration: const InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'ex: juan.perez@email.com',
+                      labelText: 'correo',
+                      hintText: 'ex: juan.perez@correo.com',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor introduce tu email';
+                        return 'Por favor introduce tu correo';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _telefonoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Telefono',
+                      hintText: '...',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor introduce tu telefono';
                       }
                       return null;
                     },
@@ -189,7 +206,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         // Llama a la función de registro
                         registerUser(
                           _nombreController.text,
-                          _emailController.text,
+                          _correoController.text,
+                          _telefonoController.text,
                           _contrasenaController.text,
                         );
                       }
