@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:GvApp/screen/login.dart';
 import 'package:GvApp/screen/home.dart';
 import 'package:GvApp/screen/perfil.dart';  
+import 'package:GvApp/screen/sign_up.dart';
 
 //final Uri _url = Uri.parse('https://github.com/cristianrm13/APP_practica2.git'); 
 
@@ -38,7 +39,8 @@ class MyApp extends StatelessWidget {
       initialRoute: initialRoute,
       routes: {
         '/login': (context) => const LoginScreens(),
-        '/home': (context) => const MainScreen(), // Ruta que lleva a MainScreen
+        '/home': (context) => const MainScreen(), 
+        '/signup' : (context) => const SignUpScreen(), 
       },
     );
   }

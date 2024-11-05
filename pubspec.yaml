@@ -26,6 +26,8 @@ dependencies:
   sensors_plus: ^6.1.0
   local_auth: ^2.0.8
   google_mobile_ads: ^5.2.0
+  fl_chart: ^0.40.1
+
 
 
 dev_dependencies:
