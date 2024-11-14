@@ -1,5 +1,6 @@
 import 'package:GvApp/screen/admin/admin_home.dart';
 import 'package:GvApp/screen/home.dart';
+import 'package:GvApp/screen/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:GvApp/screen/login.dart';
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreens(),
         '/admin_home': (context) => const AdminHomeScreen(),
         '/user_home': (context) => const HomeScreenG(),
+        '/signup': (context) => const SignUpScreen(),
       },
     );
   }

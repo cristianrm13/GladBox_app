@@ -17,13 +17,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _contrasenaController = TextEditingController();
-  final TextEditingController _confirmcontrasenaController = TextEditingController();
-  
+  final TextEditingController _confirmcontrasenaController =
+      TextEditingController();
+
   // Función que hace la solicitud HTTP
-  Future<void> registerUser(String nombre, String email, String contrasena) async {
+  Future<void> registerUser(
+      String nombre, String email, String contrasena) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.103:3000/api/usuarios'), // Cambia a tu endpoint de registro
+        Uri.parse(
+            'http://192.168.1.103:3000/api/usuarios'), // Cambia a tu endpoint de registro
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "nombre": nombre,
@@ -170,8 +173,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       const SizedBox(width: 10),
                       IconButton(
-                        icon: Image.asset('assets/X.jpg'),
-                        iconSize: 40,
+                        icon: ClipOval(
+                          child: Image.asset(
+                            'assets/X.jpg',
+                            width: 40, // Ancho de la imagen
+                            height: 40, // Alto de la imagen
+                            fit: BoxFit
+                                .cover, // Ajusta la imagen para que cubra el espacio sin distorsionarse
+                          ),
+                        ),
+                        // iconSize: 40,
                         onPressed: () {
                           // Lógica de inicio de sesión con Twitter
                         },
@@ -196,6 +207,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: const Text('Registrar'),
