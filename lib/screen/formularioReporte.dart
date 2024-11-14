@@ -77,7 +77,7 @@ class _FormularioReporteState extends State<FormularioReporte> {
     try {
       // Aquí se envía el reporte con los datos en formato JSON
       final response = await http.post(
-        Uri.parse('http://192.168.0.16:3000/api/v1/quejas'),
+        Uri.parse('http://192.168.1.105:3000/api/v1/quejas'),
         headers: {
           "Content-Type": "application/json",
         },

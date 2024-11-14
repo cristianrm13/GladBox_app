@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 
 class EditarPerfil extends StatefulWidget {
@@ -23,7 +24,6 @@ class EditarPerfilState extends State<EditarPerfil> {
   String generoSeleccionado = 'Género';
   bool obscureText = true;
 
-  final String userId = "671ae6cdaf93fdd4ffd34894";
   final LocalAuthentication auth = LocalAuthentication();
 
   @override
@@ -33,54 +33,68 @@ class EditarPerfilState extends State<EditarPerfil> {
   }
 
   Future<void> cargarDatosUsuario() async {
-    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId'); // Obtén el userId del usuario desde SharedPreferences
 
-    try {
-      final response = await http.get(url);
+    if (userId != null) {
+      final url = Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId');
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      try {
+        final response = await http.get(url);
 
-        setState(() {
-          nombreController.text = data['nombre'];
-          emailController.text = data['correo'];
-          contrasenaController.text = data['contrasena'];
-          telefonoController.text = data['telefono'];
-          direccionController.text = data['direccion'] ?? 'Dirección';
-          paisSeleccionado = data['colonia'] ?? 'San Jacinto';
-          generoSeleccionado = data['genero'] ?? 'Género';
-        });
-      } else {
-        print("Error al cargar datos de usuario: ${response.body}");
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+
+          setState(() {
+            nombreController.text = data['nombre'];
+            emailController.text = data['correo'];
+            contrasenaController.text = data['contrasena'];
+            telefonoController.text = data['telefono'];
+            direccionController.text = data['direccion'] ?? 'Dirección';
+            paisSeleccionado = data['colonia'] ?? 'San Jacinto';
+            generoSeleccionado = data['genero'] ?? 'Género';
+          });
+        } else {
+          print("Error al cargar datos de usuario: ${response.body}");
+        }
+      } catch (e) {
+        print("Error de red: $e");
       }
-    } catch (e) {
-      print("Error de red: $e");
+    } else {
+      print("No se encontró userId en SharedPreferences.");
     }
   }
 
   Future<void> actualizarUsuario() async {
-    final url = Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId'); // Obtén el userId del usuario desde SharedPreferences
 
-    final response = await http.put(
-      url,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'nombre': nombreController.text,
-        'correo': emailController.text,
-        'contrasena': contrasenaController.text,
-        'telefono': telefonoController.text,
-      }),
-    );
+    if (userId != null) {
+      final url = Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId');
 
-    if (response.statusCode == 200) {
-      _showUpdateSuccessSnackbar(context);
-    } else {
-      print("Error al actualizar usuario: ${response.body}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al actualizar el perfil')),
+      final response = await http.put(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'nombre': nombreController.text,
+          'correo': emailController.text,
+          'contrasena': contrasenaController.text,
+          'telefono': telefonoController.text,
+        }),
       );
+
+      if (response.statusCode == 200) {
+        _showUpdateSuccessSnackbar(context);
+      } else {
+        print("Error al actualizar usuario: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al actualizar el perfil')),
+        );
+      }
+    } else {
+      print("No se encontró userId en SharedPreferences.");
     }
   }
 
@@ -153,7 +167,7 @@ class EditarPerfilState extends State<EditarPerfil> {
                       child: _buildDropdownField(
                         'País',
                         paisSeleccionado,
-                        ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco','Centro', '18 de Marzo', 'Los Manguitos','El Suspiro'],
+                        ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco', 'Centro', '18 de Marzo', 'Los Manguitos', 'El Suspiro'],
                         (newValue) {
                           setState(() {
                             paisSeleccionado = newValue!;

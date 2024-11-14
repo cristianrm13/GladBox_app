@@ -13,30 +13,36 @@ class LoginScreens extends StatefulWidget {
 class _LoginScreensState extends State<LoginScreens> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  bool _isObscure = true; // Estado para controlar la visibilidad de la contraseña
+  bool _isObscure = true;
 
-  // Función para guardar el token en SharedPreferences
-  Future<void> saveToken(String token) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', token);
-  }
-
-  // Función de inicio de sesión
   Future<void> login(BuildContext context, String correo, String contrasena) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/login'),
+        Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/login'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({'correo': correo, 'contrasena': contrasena}),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final token = data['token'];
+      final data = jsonDecode(response.body);
+      final token = data['token'] ?? '';  // Manejar token como string vacío si es null
+      final role = data['role'] ?? '';
+      final userId = data['usuario']?['_id'] ?? ''; 
 
-        await saveToken(token);
-        Navigator.pushReplacementNamed(context, '/home');
-        print('Inicio de sesión exitoso. Token: $token');
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('token', token);
+        await prefs.setString('role', role);
+        await prefs.setString('userId', userId); // Guarda el userId
+        print("userId obtenido de SharedPreferences: $userId");
+
+        if (role == 'admin') {
+          Navigator.pushReplacementNamed(context, '/admin_home');
+        } else {
+          Navigator.pushReplacementNamed(context, '/user_home');
+        }
+
+        print('Inicio de sesión exitoso. Token: $token, Rol: $role, ID: $userId');
       } else {
         final errorData = jsonDecode(response.body);
         final errorMessage = errorData['error'] ?? 'Error de inicio de sesión';
@@ -85,7 +91,7 @@ class _LoginScreensState extends State<LoginScreens> {
               const SizedBox(height: 10),
               TextFormField(
                 controller: passwordController,
-                obscureText: _isObscure, // Utiliza el estado para mostrar u ocultar la contraseña
+                obscureText: _isObscure,
                 decoration: InputDecoration(
                   hintText: 'Contraseña',
                   labelText: 'Contraseña',
@@ -117,50 +123,6 @@ class _LoginScreensState extends State<LoginScreens> {
                   ),
                 ),
                 child: const Text('INICIAR SESIÓN'),
-              ),
-              const SizedBox(height: 20),
-              const Text('o inicia sesión con'),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  IconButton(
-                    icon: Image.asset('assets/google.png'),
-                    iconSize: 40,
-                    onPressed: () {
-                      // Lógica de inicio de sesión con Google
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    icon: Image.asset('assets/facebook.png'),
-                    iconSize: 40,
-                    onPressed: () {
-                      // Lógica de inicio de sesión con Facebook
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    icon: Image.asset('assets/X.png'),
-                    iconSize: 40,
-                    onPressed: () {
-                      // Lógica de inicio de sesión con Twitter
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/signup');
-                },
-                child: const Text(
-                  "¿No tienes una cuenta? INSCRIBIRSE",
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
             ],
           ),

@@ -27,6 +27,7 @@ dependencies:
   sensors_plus: ^6.1.0
   local_auth: ^2.0.8
   google_mobile_ads: ^5.2.0
+  fl_chart: ^0.69.0
 
 
 dev_dependencies:
@@ -43,7 +44,7 @@ flutter:
     - assets/UP.jpg
     - assets/google.png
     - assets/facebook.png
-    - assets/X.png
+    - assets/X.jpg
     - assets/Gladbox.png
     #- assets/profile_picture.png
     #- assets/post_image.png

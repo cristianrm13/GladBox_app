@@ -1,15 +1,17 @@
 // home.dart
 import 'dart:convert';
+import 'package:GvApp/screen/admin/graficas.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:GvApp/screen/location_status.dart';
 import 'package:GvApp/screen/notificaciones.dart';
 import 'package:GvApp/screen/perfil.dart';
-import 'package:GvApp/screen/formularioReporte.dart';
+//import 'package:GvApp/screen/formularioReporte.dart';
 import 'package:GvApp/screen/extras/ad_banner.dart'; // Importa el widget del anuncio
 
-class HomeScreenG extends StatelessWidget {
-  const HomeScreenG({super.key});
+class AdminHomeScreen extends StatelessWidget {
+  const AdminHomeScreen({super.key});
+
 
   Future<List<dynamic>> fetchQuejas() async {
     final url = Uri.parse('http://192.168.1.103:3000/api/v1/quejas/');
@@ -37,7 +39,7 @@ class HomeScreenG extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FormularioReporte()),
+                MaterialPageRoute(builder: (context) => const ReportesView()),
               );
             },
           ),

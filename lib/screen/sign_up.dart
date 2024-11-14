@@ -23,7 +23,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> registerUser(String nombre, String email, String contrasena) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.2.106:3000/api/usuarios'), // Cambia a tu endpoint de registro
+        Uri.parse('http://192.168.1.103:3000/api/usuarios'), // Cambia a tu endpoint de registro
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "nombre": nombre,
@@ -170,7 +170,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       const SizedBox(width: 10),
                       IconButton(
-                        icon: Image.asset('assets/X.png'),
+                        icon: Image.asset('assets/X.jpg'),
                         iconSize: 40,
                         onPressed: () {
                           // Lógica de inicio de sesión con Twitter

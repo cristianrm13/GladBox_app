@@ -1,6 +1,7 @@
 import 'package:GvApp/screen/editar_perfil.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class PerfilScreen extends StatefulWidget {
@@ -20,27 +21,43 @@ class _PerfilScreenState extends State<PerfilScreen> {
     super.initState();
     obtenerDatosUsuario();
   }
-  final String userId = "671ae6cdaf93fdd4ffd34894"; // Asegúrate de pasar el ID del usuario correcto aquí
 
   Future<void> obtenerDatosUsuario() async {
     try {
-      final response = await http.get(
-        Uri.parse('http://192.168.0.16:3000/api/v1/usuarios/$userId'),
-      );
+      // Obtener el userId desde SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          nombre = data['nombre'] ?? 'Nombre desconocido';
-          email = data['correo'] ?? 'Email desconocido';
-          telefono = data['telefono'] ?? 'Teléfono desconocido';
-        });
+      if (userId != null) {
+        // Realizar la solicitud HTTP con el userId obtenido
+        final response = await http.get(
+          Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId'),
+        );
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          setState(() {
+            nombre = data['nombre'] ?? 'Nombre desconocido';
+            email = data['correo'] ?? 'Email desconocido';
+            telefono = data['telefono'] ?? 'Teléfono desconocido';
+          });
+        } else {
+          throw Exception('Error al obtener los datos del usuario');
+        }
       } else {
-        throw Exception('Error al obtener los datos del usuario');
+        throw Exception('userId no encontrado en SharedPreferences');
       }
     } catch (error) {
       print('Error en obtenerDatosUsuario: $error');
     }
+  }
+
+  Future<void> cerrarSesion() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Limpiamos todos los datos guardados
+
+    // Navegamos a la pantalla de inicio de sesión y eliminamos las rutas anteriores
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 
   @override
@@ -67,7 +84,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header
             Container(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Column(
@@ -76,7 +92,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+                        backgroundImage: NetworkImage('https://cdn-icons-png.flaticon.com/512/295/295128.png'),
                       ),
                       Positioned(
                         bottom: 0,
@@ -84,7 +100,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         child: CircleAvatar(
                           backgroundColor: Colors.white,
                           radius: 20,
-                          child: Icon(Icons.edit, color: Colors.black),
+                          child: Icon(Icons.key, color: Colors.black),
                         ),
                       ),
                     ],
@@ -105,7 +121,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 ],
               ),
             ),
-            // Información del perfil
             Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(
@@ -118,11 +133,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     title: const Text('Editar información del perfil'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
-                      // Navega a la pantalla de edición de perfil
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const EditarPerfil(), // Asegúrate de implementar esta pantalla
+                          builder: (context) => const EditarPerfil(),
                         ),
                       );
                     },
@@ -140,7 +154,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 ],
               ),
             ),
-            // Seguridad y tema
             Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(
@@ -157,17 +170,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   const Divider(),
                   ListTile(
                     leading: const Icon(Icons.brightness_6),
-                    title: const Text('cerrar sesion'),
+                    title: const Text('Cerrar sesión'),
                     trailing: const Text(
-                      'ir',
+                      'Ir',
                       style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
                     ),
-                    onTap: () {},
+                    onTap: cerrarSesion,
                   ),
                 ],
               ),
             ),
-            // Soporte y ayuda
             Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(
