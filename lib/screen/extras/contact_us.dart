@@ -17,8 +17,10 @@ class ContactUsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Historial de Contacto',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+
+                'Esta aplicaacion fue desarrollada por:',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+
               ),
               const SizedBox(height: 20),
               _buildContactCard('Cristian Gerardo Vázquez Ramos', 'assets/cristian.jpeg'),
@@ -52,3 +54,4 @@ class ContactUsScreen extends StatelessWidget {
     );
   }
 }
+

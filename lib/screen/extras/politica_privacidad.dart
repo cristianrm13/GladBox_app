@@ -10,12 +10,12 @@ class PoliticaPrivacidad extends StatelessWidget {
         title: const Text('Política y Privacidad'),
         backgroundColor: Colors.green,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: const Padding(
+        padding: EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(
                 'Política de Privacidad',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

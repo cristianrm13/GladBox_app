@@ -1,3 +1,5 @@
+import 'package:GvApp/screen/home.dart';
+import 'package:GvApp/screen/login.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -15,20 +17,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   // Controladores para cada campo de entrada
   final TextEditingController _nombreController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _correoController = TextEditingController();
+  final TextEditingController _telefonoController = TextEditingController();
   final TextEditingController _contrasenaController = TextEditingController();
   final TextEditingController _confirmcontrasenaController = TextEditingController();
-  
+
   // Función que hace la solicitud HTTP
-  Future<void> registerUser(String nombre, String email, String contrasena) async {
+  Future<void> registerUser(
+      String nombre, String correo, String contrasena,String telefono) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.2.106:3000/api/usuarios'), // Cambia a tu endpoint de registro
+        Uri.parse(
+            'http://192.168.1.103:3000/api/v1/usuarios'), // Cambia a tu endpoint de registro
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "nombre": nombre,
-          "email": email,
+          "correo": correo,
           "contrasena": contrasena,
+          "telefono": telefono,
         }),
       );
 
@@ -36,6 +42,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registro exitoso!')),
         );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreens()), 
+      );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${response.statusCode}')),
@@ -87,15 +97,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
-                    controller: _emailController,
+                    controller: _correoController,
                     decoration: const InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'ex: juan.perez@email.com',
+                      labelText: 'correo',
+                      hintText: 'ex: juan.perez@correo.com',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor introduce tu email';
+                        return 'Por favor introduce tu correo';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _telefonoController,
+                    decoration: const InputDecoration(
+                      labelText: 'telefono',
+                      hintText: 'ex: 123 456 7890',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor introduce tu telefono';
                       }
                       return null;
                     },
@@ -170,8 +195,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       const SizedBox(width: 10),
                       IconButton(
-                        icon: Image.asset('assets/X.png'),
-                        iconSize: 40,
+                        icon: ClipOval(
+                          child: Image.asset(
+                            'assets/X.jpg',
+                            width: 40, // Ancho de la imagen
+                            height: 40, // Alto de la imagen
+                            fit: BoxFit
+                                .cover, // Ajusta la imagen para que cubra el espacio sin distorsionarse
+                          ),
+                        ),
+                        // iconSize: 40,
                         onPressed: () {
                           // Lógica de inicio de sesión con Twitter
                         },
@@ -189,18 +222,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         // Llama a la función de registro
                         registerUser(
                           _nombreController.text,
-                          _emailController.text,
+                          _correoController.text,
                           _contrasenaController.text,
+                          _telefonoController.text,
                         );
                       }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: const Text('Registrar'),
                   ),
                   const SizedBox(height: 20),
+                   
                 ],
               ),
             ),
