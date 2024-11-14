@@ -124,6 +124,19 @@ class _LoginScreensState extends State<LoginScreens> {
                 ),
                 child: const Text('INICIAR SESIÓN'),
               ),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/signup');
+                },
+                child: const Text(
+                  "¿No tienes una cuenta? INSCRIBIRSE",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ],
           ),
         ),

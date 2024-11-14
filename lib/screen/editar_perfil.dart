@@ -34,10 +34,12 @@ class EditarPerfilState extends State<EditarPerfil> {
 
   Future<void> cargarDatosUsuario() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId'); // Obtén el userId del usuario desde SharedPreferences
+    final userId = prefs.getString(
+        'userId'); // Obtén el userId del usuario desde SharedPreferences
 
     if (userId != null) {
-      final url = Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId');
+      final url =
+          Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId');
 
       try {
         final response = await http.get(url);
@@ -67,10 +69,12 @@ class EditarPerfilState extends State<EditarPerfil> {
 
   Future<void> actualizarUsuario() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId'); // Obtén el userId del usuario desde SharedPreferences
+    final userId = prefs.getString(
+        'userId'); // Obtén el userId del usuario desde SharedPreferences
 
     if (userId != null) {
-      final url = Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId');
+      final url =
+          Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId');
 
       final response = await http.put(
         url,
@@ -101,7 +105,8 @@ class EditarPerfilState extends State<EditarPerfil> {
   Future<void> _authenticateAndSubmit() async {
     try {
       final isAuthenticated = await auth.authenticate(
-        localizedReason: 'Por favor verifica tu identidad con tu huella dactilar',
+        localizedReason:
+            'Por favor verifica tu identidad con tu huella dactilar',
         options: const AuthenticationOptions(
           useErrorDialogs: true,
           stickyAuth: true,
@@ -112,7 +117,9 @@ class EditarPerfilState extends State<EditarPerfil> {
         await actualizarUsuario();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Autenticación fallida. No se realizó la actualización.')),
+          const SnackBar(
+              content: Text(
+                  'Autenticación fallida. No se realizó la actualización.')),
         );
       }
     } on PlatformException catch (e) {
@@ -146,8 +153,10 @@ class EditarPerfilState extends State<EditarPerfil> {
           children: [
             Column(
               children: [
-                _buildTextField('Nombre completo', controller: nombreController),
-                _buildTextField('Nombre de usuario', controller: usuarioController),
+                _buildTextField('Nombre completo',
+                    controller: nombreController),
+                _buildTextField('Nombre de usuario',
+                    controller: usuarioController),
                 _buildTextField(
                   'Contraseña',
                   controller: contrasenaController,
@@ -164,29 +173,31 @@ class EditarPerfilState extends State<EditarPerfil> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildDropdownField(
-                        'País',
-                        paisSeleccionado,
-                        ['El Capricho', 'San Jacinto', '5 de Mayo', 'Mercado', 'Las pilas', 'El Maluco', 'Centro', '18 de Marzo', 'Los Manguitos', 'El Suspiro'],
-                        (newValue) {
-                          setState(() {
-                            paisSeleccionado = newValue!;
-                          });
-                        }
-                      ),
+                      child: _buildDropdownField('País', paisSeleccionado, [
+                        'El Capricho',
+                        'San Jacinto',
+                        '5 de Mayo',
+                        'Mercado',
+                        'Las pilas',
+                        'El Maluco',
+                        'Centro',
+                        '18 de Marzo',
+                        'Los Manguitos',
+                        'El Suspiro'
+                      ], (newValue) {
+                        setState(() {
+                          paisSeleccionado = newValue!;
+                        });
+                      }),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: _buildDropdownField(
-                        'Género',
-                        generoSeleccionado,
-                        ['Género', 'Hombre', 'Mujer', 'Otro'],
-                        (newValue) {
-                          setState(() {
-                            generoSeleccionado = newValue!;
-                          });
-                        }
-                      ),
+                      child: _buildDropdownField('Género', generoSeleccionado,
+                          ['Género', 'Hombre', 'Mujer', 'Otro'], (newValue) {
+                        setState(() {
+                          generoSeleccionado = newValue!;
+                        });
+                      }),
                     ),
                   ],
                 ),
@@ -202,20 +213,24 @@ class EditarPerfilState extends State<EditarPerfil> {
                 ),
               ],
             ),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _authenticateAndSubmit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
+                 padding: const EdgeInsets.symmetric(vertical: 16.0),
               ),
               child: const Text(
                 'CONFIRMAR',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -230,7 +245,11 @@ class EditarPerfilState extends State<EditarPerfil> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  Widget _buildTextField(String label, {bool obscureText = false, required TextEditingController controller, VoidCallback? onSuffixTap, VoidCallback? onTap}) {
+  Widget _buildTextField(String label,
+      {bool obscureText = false,
+      required TextEditingController controller,
+      VoidCallback? onSuffixTap,
+      VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
@@ -255,7 +274,8 @@ class EditarPerfilState extends State<EditarPerfil> {
     );
   }
 
-  Widget _buildDropdownField(String label, String value, List<String> items, ValueChanged<String?>? onChanged) {
+  Widget _buildDropdownField(String label, String value, List<String> items,
+      ValueChanged<String?>? onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: InputDecoration(
