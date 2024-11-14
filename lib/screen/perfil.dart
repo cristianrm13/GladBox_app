@@ -1,4 +1,6 @@
 import 'package:GvApp/screen/editar_perfil.dart';
+import 'package:GvApp/screen/extras/contact_us.dart';
+import 'package:GvApp/screen/extras/politica_privacidad.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -198,14 +200,28 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     leading: const Icon(Icons.contact_mail_outlined),
                     title: const Text('Contact us'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ContactUsScreen(),
+                        ),
+                      );
+                    },
                   ),
                   const Divider(),
                   ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined),
                     title: const Text('Privacy policy'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PoliticaPrivacidad(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
