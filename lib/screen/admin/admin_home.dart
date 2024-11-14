@@ -35,7 +35,7 @@ class AdminHomeScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.calendar_today_rounded),
             onPressed: () {
               Navigator.push(
                 context,
