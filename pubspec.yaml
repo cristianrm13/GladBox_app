@@ -30,6 +30,8 @@ dependencies:
   fl_chart: ^0.69.0
   flutter_local_notifications: ^18.0.1
   photo_view: ^0.15.0
+  audioplayers: ^6.1.0
+  path_provider: ^2.1.5
 
 
 dev_dependencies:
@@ -53,3 +55,4 @@ flutter:
     - assets/alan.jpg
     #- assets/profile_picture.png
     #- assets/post_image.png
+    - assets/sounds/sent.wav
