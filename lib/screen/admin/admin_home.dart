@@ -1,5 +1,6 @@
 // home.dart
 import 'dart:convert';
+import 'dart:io'; 
 import 'package:GvApp/screen/admin/graficas.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -13,17 +14,34 @@ class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
 
 
-  Future<List<dynamic>> fetchQuejas() async {
-    final url = Uri.parse('http://192.168.1.103:3000/api/v1/quejas/');
+Future<List<dynamic>> fetchQuejas() async {
+  final url = Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/quejas/');
+  try {
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      // Decodifica el JSON
+      List<dynamic> quejas = json.decode(response.body);
+
+      // Ordena las quejas por la fecha de creación (descendente)
+      quejas.sort((a, b) {
+        final dateA = DateTime.parse(a['dateCreated']);
+        final dateB = DateTime.parse(b['dateCreated']);
+        return dateB.compareTo(dateA); // Más reciente primero
+      });
+
+      return quejas;
     } else {
       throw Exception('Error al obtener quejas: ${response.statusCode}');
     }
+  } on SocketException {
+    throw Exception('Ups! Estamos tratando de conectar con el servidor, vuelve en unos minutos.');
+  } catch (e) {
+    throw Exception('Ha ocurrido un error inesperado.');
   }
+}
 
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,7 +124,10 @@ class AdminHomeScreen extends StatelessWidget {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    child: _buildErrorCard(snapshot.error.toString()),
+                  );
                 } else {
                   final quejas = snapshot.data ?? [];
                   return ListView.builder(
@@ -123,6 +144,41 @@ class AdminHomeScreen extends StatelessWidget {
           // Widget del anuncio en la parte inferior
           AdBanner(),
         ],
+      ),
+    );
+  }
+    Widget _buildErrorCard(String errorMessage) {
+    return Center(
+      child: Card(
+        color: Colors.red[100],
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 5,
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error, color: Colors.red, size: 50),
+              const SizedBox(height: 10),
+              Text(
+                errorMessage,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  // Recargar la página
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+                child: const Text('Reintentar'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -177,13 +233,22 @@ class AdminHomeScreen extends StatelessWidget {
               'Estatus: ${queja['status']}',
               style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
             ),
-            const SizedBox(height: 10),
+          const SizedBox(height: 10),
+          if (queja['imageUrl'] != null && queja['imageUrl'].isNotEmpty)
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
-              child: Image.asset(
-                'assets/Gladbox.png',
+              child: Image.network(
+                queja['imageUrl'],
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Text('Error al cargar la imagen');
+                },
               ),
+            )
+          else
+            const Text(
+              'Sin imagen',
+              style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
             ),
             const SizedBox(height: 10),
             const Row(

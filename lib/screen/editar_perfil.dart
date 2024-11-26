@@ -39,7 +39,7 @@ class EditarPerfilState extends State<EditarPerfil> {
 
     if (userId != null) {
       final url =
-          Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId');
+          Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/usuarios/$userId');
 
       try {
         final response = await http.get(url);
@@ -74,7 +74,7 @@ class EditarPerfilState extends State<EditarPerfil> {
 
     if (userId != null) {
       final url =
-          Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId');
+          Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/usuarios/$userId');
 
       final response = await http.put(
         url,
@@ -155,8 +155,8 @@ class EditarPerfilState extends State<EditarPerfil> {
               children: [
                 _buildTextField('Nombre completo',
                     controller: nombreController),
-                _buildTextField('Nombre de usuario',
-                    controller: usuarioController),
+                /* _buildTextField('Nombre de usuario',
+                    controller: usuarioController), */
                 _buildTextField(
                   'Contraseña',
                   controller: contrasenaController,
@@ -173,7 +173,7 @@ class EditarPerfilState extends State<EditarPerfil> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildDropdownField('País', paisSeleccionado, [
+                      child: _buildDropdownField('Colonia', paisSeleccionado, [
                         'El Capricho',
                         'San Jacinto',
                         '5 de Mayo',

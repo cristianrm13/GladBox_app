@@ -33,7 +33,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       if (userId != null) {
         // Realizar la solicitud HTTP con el userId obtenido
         final response = await http.get(
-          Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/$userId'),
+          Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/usuarios/$userId'),
         );
 
         if (response.statusCode == 200) {

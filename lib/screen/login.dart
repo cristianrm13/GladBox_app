@@ -18,7 +18,7 @@ class _LoginScreensState extends State<LoginScreens> {
   Future<void> login(BuildContext context, String correo, String contrasena) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.103:3000/api/v1/usuarios/login'),
+        Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/usuarios/login'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({'correo': correo, 'contrasena': contrasena}),
       );
