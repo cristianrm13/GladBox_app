@@ -101,7 +101,6 @@ class _AnimatedContactCardState extends State<AnimatedContactCard> {
           children: [
             GestureDetector(
               onTap: () {
-                // Puedes usar esta acción para hacer un zoom o redirigir a otro detalle.
               },
               child: Transform.scale(
                 scale: _isHovered ? 1.1 : 1.0,

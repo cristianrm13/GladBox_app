@@ -1,6 +1,7 @@
 import 'package:GvApp/screen/editar_perfil.dart';
 import 'package:GvApp/screen/extras/contact_us.dart';
 import 'package:GvApp/screen/extras/politica_privacidad.dart';
+import 'package:GvApp/screen/extras/servicios.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -56,9 +57,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Future<void> cerrarSesion() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Limpiamos todos los datos guardados
+    await prefs.clear();
 
-    // Navegamos a la pantalla de inicio de sesión y eliminamos las rutas anteriores
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 
@@ -117,7 +117,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    'Email: $email | Teléfono: $telefono',
+                    'Correo: $email | Teléfono: $telefono',
                     style: const TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -164,14 +164,21 @@ class _PerfilScreenState extends State<PerfilScreen> {
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.security),
+                    leading: const Icon(Icons.design_services),
                     title: const Text('Servicios de emergencia'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ServiciosEmergenciasScreen(),
+                        ),
+                      );
+                    },
                   ),
                   const Divider(),
                   ListTile(
-                    leading: const Icon(Icons.brightness_6),
+                    leading: const Icon(Icons.close),
                     title: const Text('Cerrar sesión'),
                     trailing: const Text(
                       'Ir',
@@ -190,15 +197,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.help_outline),
-                    title: const Text('Help & Support'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
-                  ),
-                  const Divider(),
-                  ListTile(
                     leading: const Icon(Icons.contact_mail_outlined),
-                    title: const Text('Contact us'),
+                    title: const Text('Nosotros'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
                       Navigator.push(
@@ -212,7 +212,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   const Divider(),
                   ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined),
-                    title: const Text('Privacy policy'),
+                    title: const Text('Politica de privacidad'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
                       Navigator.push(

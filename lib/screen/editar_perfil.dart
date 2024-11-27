@@ -34,12 +34,11 @@ class EditarPerfilState extends State<EditarPerfil> {
 
   Future<void> cargarDatosUsuario() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString(
-        'userId'); // Obtén el userId del usuario desde SharedPreferences
+    final userId = prefs.getString('userId');
 
     if (userId != null) {
-      final url =
-          Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/usuarios/$userId');
+      final url = Uri.parse(
+          'http://gladboxapi.integrador.xyz:3000/api/v1/usuarios/$userId');
 
       try {
         final response = await http.get(url);
@@ -69,12 +68,11 @@ class EditarPerfilState extends State<EditarPerfil> {
 
   Future<void> actualizarUsuario() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString(
-        'userId'); // Obtén el userId del usuario desde SharedPreferences
+    final userId = prefs.getString('userId');
 
     if (userId != null) {
-      final url =
-          Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/usuarios/$userId');
+      final url = Uri.parse(
+          'http://gladboxapi.integrador.xyz:3000/api/v1/usuarios/$userId');
 
       final response = await http.put(
         url,
@@ -155,8 +153,6 @@ class EditarPerfilState extends State<EditarPerfil> {
               children: [
                 _buildTextField('Nombre completo',
                     controller: nombreController),
-                /* _buildTextField('Nombre de usuario',
-                    controller: usuarioController), */
                 _buildTextField(
                   'Contraseña',
                   controller: contrasenaController,
@@ -222,7 +218,7 @@ class EditarPerfilState extends State<EditarPerfil> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                 padding: const EdgeInsets.symmetric(vertical: 16.0),
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
               ),
               child: const Text(
                 'CONFIRMAR',

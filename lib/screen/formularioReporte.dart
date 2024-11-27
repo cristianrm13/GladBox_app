@@ -4,9 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:audioplayers/audioplayers.dart'; // Importa audioplayers
-
-
+//import 'package:audioplayers/audioplayers.dart'; // Importa audioplayers
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FormularioReporte extends StatefulWidget {
@@ -23,7 +21,11 @@ class _FormularioReporteState extends State<FormularioReporte> {
   String _categoriaSeleccionada = 'alumbrado'; // Categoría por defecto
   File? _selectedImage; // Para almacenar la imagen seleccionada
   final ImagePicker _picker = ImagePicker(); // Instancia de ImagePicker
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  // final AudioPlayer _audioPlayer = AudioPlayer();
+  Color _titleBorderColor = Colors.grey;
+  Color _descriptionBorderColor = Colors.grey;
+
+  bool _canSubmit = true;
 
   Future<void> _pickImage() async {
     var status = await Permission.storage.status;
@@ -35,10 +37,56 @@ class _FormularioReporteState extends State<FormularioReporte> {
 
     if (pickedFile != null) {
       setState(() {
-        _selectedImage = File(pickedFile.path); 
+        _selectedImage = File(pickedFile.path);
       });
     } else {
       print('No se seleccionó ninguna imagen.');
+    }
+  }
+
+  Color _getBorderColor(int obscenasCount) {
+    if (obscenasCount == 0) {
+      return Colors.grey; // Normal
+    } else if (obscenasCount == 1) {
+      return Colors.yellow; // Advertencia leve
+    } else if (obscenasCount == 2) {
+      return Colors.orange; // Advertencia alta
+    } else {
+      return Colors.red; // Bloqueado
+    }
+  }
+
+  Future<void> _analyzeText(String text, bool isTitle) async {
+    final url = Uri.parse('http://3.222.8.116:5000/berto');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'message': text}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final obscenasCount = data['obscenas'] ?? 0;
+
+        setState(() {
+          if (isTitle) {
+            _titleBorderColor = _getBorderColor(obscenasCount);
+          } else {
+            _descriptionBorderColor = _getBorderColor(obscenasCount);
+          }
+          _canSubmit = obscenasCount < 3;
+          // _canContinue = titleObscenas < 3 && descriptionObscenas < 3;
+        });
+
+        if (!_canSubmit) {
+          _showBlockedDialog();
+        }
+      } else {
+        print('Error en el análisis de texto: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error al analizar el texto: $e');
     }
   }
 
@@ -46,9 +94,19 @@ class _FormularioReporteState extends State<FormularioReporte> {
     final String title = _titleController.text.trim();
     final String description = _descriptionController.text.trim();
 
-    if (title.isEmpty || _categoriaSeleccionada.isEmpty || description.isEmpty || _selectedImage == null) {
+    if (!_canSubmit) {
+      _showBlockedDialog();
+      return;
+    }
+
+    if (title.isEmpty ||
+        _categoriaSeleccionada.isEmpty ||
+        description.isEmpty ||
+        _selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, completa todos los campos y selecciona una imagen.')),
+        const SnackBar(
+            content: Text(
+                'Por favor, completa todos los campos y selecciona una imagen.')),
       );
       return;
     }
@@ -58,7 +116,9 @@ class _FormularioReporteState extends State<FormularioReporte> {
 
     if (token.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error de autenticación. Por favor, inicia sesión de nuevo.')),
+        const SnackBar(
+            content: Text(
+                'Error de autenticación. Por favor, inicia sesión de nuevo.')),
       );
       Navigator.pushReplacementNamed(context, '/login');
       return;
@@ -114,20 +174,39 @@ class _FormularioReporteState extends State<FormularioReporte> {
     }
   } */
 
+  void _showBlockedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Reporte Inadecuado ‼️'),
+          content: const Text(
+              '😬 Se han detectado frases inapropiadas. Recuerda mantener un lenguaje respetuoso y acorde con los valores de esta plataforma. Gracias por tu atención 🤗'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showConfirmationDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Reporte enviado"),
+          title: const Text("✔️ Reporte enviado"),
           content: const Text(
             "Tu queja está siendo enviada a las autoridades correspondientes. No olvides revisar tus notificaciones.",
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
-                Navigator.pop(context); // Vuelve a la pantalla anterior
+                Navigator.of(context).pop();
+                Navigator.pop(context);
               },
               child: const Text("Aceptar"),
             ),
@@ -144,7 +223,7 @@ class _FormularioReporteState extends State<FormularioReporte> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Regresar a la pantalla anterior
+            Navigator.pop(context);
           },
         ),
         backgroundColor: Colors.white,
@@ -174,13 +253,15 @@ class _FormularioReporteState extends State<FormularioReporte> {
               const SizedBox(height: 10),
               TextField(
                 controller: _titleController,
+                onChanged: (value) => _analyzeText(value, true),
                 decoration: InputDecoration(
                   hintText: '...',
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+                    //borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: _titleBorderColor),
                   ),
                 ),
               ),
@@ -221,6 +302,7 @@ class _FormularioReporteState extends State<FormularioReporte> {
               const SizedBox(height: 10),
               TextField(
                 controller: _descriptionController,
+                onChanged: (value) => _analyzeText(value, true),
                 maxLines: 5,
                 decoration: InputDecoration(
                   hintText: 'Descripción...',
@@ -228,7 +310,8 @@ class _FormularioReporteState extends State<FormularioReporte> {
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+                    //borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: _descriptionBorderColor),
                   ),
                 ),
               ),
@@ -261,11 +344,12 @@ class _FormularioReporteState extends State<FormularioReporte> {
               const SizedBox(height: 40),
               Center(
                 child: ElevatedButton(
-                  onPressed: _submitReport, // Llama a la función que envía el reporte
+                  onPressed:
+                      _submitReport, // Llama a la función que envía el reporte
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 80, vertical: 15),
+                        horizontal: 75, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -282,7 +366,300 @@ class _FormularioReporteState extends State<FormularioReporte> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 }
 
 
 
+/* 
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+class FormularioReporte extends StatefulWidget {
+  const FormularioReporte({super.key});
+
+  @override
+  _FormularioReporteState createState() => _FormularioReporteState();
+}
+
+class _FormularioReporteState extends State<FormularioReporte> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
+  String _categoriaSeleccionada = 'alumbrado'; // Categoría por defecto
+  File? _selectedImage; // Para almacenar la imagen seleccionada
+  final ImagePicker _picker = ImagePicker(); // Instancia de ImagePicker
+  Color _titleBorderColor = Colors.grey;
+  Color _descriptionBorderColor = Colors.grey;
+
+  bool _canSubmit = true;
+
+  Future<void> _pickImage() async {
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      await Permission.storage.request();
+    }
+
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    } else {
+      print('No se seleccionó ninguna imagen.');
+    }
+  }
+
+  Color _getBorderColor(int obscenasCount) {
+    if (obscenasCount == 0) {
+      return Colors.grey; // Normal
+    } else if (obscenasCount == 1) {
+      return Colors.yellow; // Advertencia leve
+    } else if (obscenasCount == 2) {
+      return Colors.orange; // Advertencia alta
+    } else {
+      return Colors.red; // Bloqueado
+    }
+  }
+
+  Future<void> _analyzeText(String text, bool isTitle) async {
+    final url = Uri.parse('http://54.235.133.98:5000/analyze');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'message': text}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final obscenasCount = data['obscenas'] ?? 0;
+
+        setState(() {
+          if (isTitle) {
+            _titleBorderColor = _getBorderColor(obscenasCount);
+          } else {
+            _descriptionBorderColor = _getBorderColor(obscenasCount);
+          }
+          _canSubmit = obscenasCount < 3;
+        });
+
+        if (!_canSubmit) {
+          _showBlockedDialog();
+        }
+      } else {
+        print('Error en el análisis de texto: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error al analizar el texto: $e');
+    }
+  }
+
+  Future<void> _submitReport() async {
+    final String title = _titleController.text.trim();
+    final String description = _descriptionController.text.trim();
+
+    if (!_canSubmit) {
+      _showBlockedDialog();
+      return;
+    }
+
+    if (title.isEmpty || _categoriaSeleccionada.isEmpty || description.isEmpty || _selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, completa todos los campos y selecciona una imagen.')),
+      );
+      return;
+    }
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    if (token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error de autenticación. Por favor, inicia sesión de nuevo.')),
+      );
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/quejas'),
+      );
+
+      request.headers.addAll({
+        "Authorization": "Bearer $token",
+      });
+
+      request.fields['title'] = title;
+      request.fields['description'] = description;
+      request.fields['category'] = _categoriaSeleccionada;
+
+      // Adjunta la imagen al cuerpo de la solicitud
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'image', // Nombre del campo esperado en el backend
+          _selectedImage!.path,
+        ),
+      );
+
+      final response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _showConfirmationDialog();
+      } else {
+        final responseBody = await response.stream.bytesToString();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al enviar el reporte: $responseBody')),
+        );
+      }
+    } catch (e) {
+      print('Exception: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al enviar el reporte.')),
+      );
+    }
+  }
+
+  void _showBlockedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Reporte Bloqueado'),
+          content: const Text(
+              'Se han detectado frases inapropiadas. Por favor, corrige los datos antes de continuar.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Reporte enviado"),
+          content: const Text(
+            "Tu queja está siendo enviada a las autoridades correspondientes. No olvides revisar tus notificaciones.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+                Navigator.pop(context); // Vuelve a la pantalla anterior
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Regresar a la pantalla anterior
+          },
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Crear reporte',
+          style: TextStyle(color: Colors.black),
+        ),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Título',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _titleController,
+                onChanged: (value) => _analyzeText(value, true),
+                decoration: InputDecoration(
+                  hintText: '...',
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: _titleBorderColor),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Descripción',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _descriptionController,
+                onChanged: (value) => _analyzeText(value, false),
+                maxLines: 5,
+                decoration: InputDecoration(
+                  hintText: 'Descripción...',
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: _descriptionBorderColor),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _pickImage,
+                child: const Text('Seleccionar Imagen'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _submitReport,
+                child: const Text('Enviar Reporte'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+}
+ */

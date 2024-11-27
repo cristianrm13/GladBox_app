@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -17,6 +19,7 @@ class _CommentScreenState extends State<CommentScreen> {
   final TextEditingController _commentController = TextEditingController();
   late Future<List<dynamic>> _futureComments;
   bool _isSending = false;
+  bool _canSubmit = true;
 
   @override
   void initState() {
@@ -29,7 +32,8 @@ class _CommentScreenState extends State<CommentScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     if (token == null) {
-      throw Exception('Token no encontrado. Por favor, inicia sesión nuevamente.');
+      throw Exception(
+          'Token no encontrado. Por favor, inicia sesión nuevamente.');
     }
     return token;
   }
@@ -48,19 +52,57 @@ class _CommentScreenState extends State<CommentScreen> {
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
-print('URL para fetchComments: $url');
+      print('URL para fetchComments: $url');
+
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        final error = json.decode(response.body)['error'] ?? 'Error desconocido';
+        final error =
+            json.decode(response.body)['error'] ?? 'Error desconocido';
         throw Exception('Error al obtener comentarios: $error');
       }
+    } on SocketException {
+      throw Exception(
+          'No se pudo conectar al servidor. Por favor, verifica tu conexión y vuelve a intentar.');
     } catch (e) {
       throw Exception('Ha ocurrido un error inesperado: $e');
     }
   }
 
+  Future<void> _analyzeText(String text) async {
+    final url = Uri.parse('http://3.222.8.116:5000/berto');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'message': text}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final obscenasCount = data['obscenas'] ?? 0;
+
+        setState(() {
+          _canSubmit = obscenasCount <
+              3; // No permitir enviar si hay demasiados términos inapropiados
+        });
+
+        if (!_canSubmit) {
+          _showBlockedDialog();
+        }
+      } else {
+        print('Error en el análisis de texto: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error al analizar el texto: $e');
+    }
+  }
+
   Future<void> addComment(String comment) async {
+    if (!_canSubmit) {
+      _showBlockedDialog();
+      return;
+    }
     final url = Uri.parse(
         'http://gladboxapi.integrador.xyz:3000/api/v1/comentarios/${widget.complaintId}');
     try {
@@ -80,7 +122,8 @@ print('URL para fetchComments: $url');
         });
         _commentController.clear();
       } else {
-        final error = json.decode(response.body)['error'] ?? 'Error desconocido';
+        final error =
+            json.decode(response.body)['error'] ?? 'Error desconocido';
         throw Exception('Error al agregar comentario: $error');
       }
     } catch (e) {
@@ -98,6 +141,25 @@ print('URL para fetchComments: $url');
         content: Text(error, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.red,
       ),
+    );
+  }
+
+  void _showBlockedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Comentario Inadecuado ‼️'),
+          content: const Text(
+              '😬 Se han detectado frases inapropiadas. Recuerda mantener un lenguaje respetuoso y acorde con los valores de esta plataforma.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Aceptar'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -132,7 +194,8 @@ print('URL para fetchComments: $url');
                       return ListTile(
                         leading: const CircleAvatar(child: Icon(Icons.person)),
                         title: Text(comment['content']),
-                        subtitle: Text(comment['userId']?['nombre'] ?? 'Usuario desconocido'),
+                        subtitle: Text(comment['userId']?['nombre'] ??
+                            'Usuario desconocido'),
                       );
                     },
                   );
@@ -151,6 +214,7 @@ print('URL para fetchComments: $url');
                       hintText: 'Escribe un comentario...',
                       border: OutlineInputBorder(),
                     ),
+                    onChanged: (value) => _analyzeText(value),
                   ),
                 ),
                 IconButton(

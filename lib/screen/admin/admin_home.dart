@@ -1,47 +1,76 @@
-// home.dart
 import 'dart:convert';
-import 'dart:io'; 
+import 'dart:io';
 import 'package:GvApp/screen/admin/graficas.dart';
+import 'package:GvApp/screen/admin/notifyAdmin.dart';
+import 'package:GvApp/screen/extras/comments_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:GvApp/screen/location_status.dart';
-import 'package:GvApp/screen/notificaciones.dart';
 import 'package:GvApp/screen/perfil.dart';
-//import 'package:GvApp/screen/formularioReporte.dart';
-import 'package:GvApp/screen/extras/ad_banner.dart'; // Importa el widget del anuncio
+import 'package:GvApp/screen/extras/ad_banner.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class AdminHomeScreen extends StatelessWidget {
+class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
 
-
-Future<List<dynamic>> fetchQuejas() async {
-  final url = Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/quejas/');
-  try {
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      // Decodifica el JSON
-      List<dynamic> quejas = json.decode(response.body);
-
-      // Ordena las quejas por la fecha de creación (descendente)
-      quejas.sort((a, b) {
-        final dateA = DateTime.parse(a['dateCreated']);
-        final dateB = DateTime.parse(b['dateCreated']);
-        return dateB.compareTo(dateA); // Más reciente primero
-      });
-
-      return quejas;
-    } else {
-      throw Exception('Error al obtener quejas: ${response.statusCode}');
-    }
-  } on SocketException {
-    throw Exception('Ups! Estamos tratando de conectar con el servidor, vuelve en unos minutos.');
-  } catch (e) {
-    throw Exception('Ha ocurrido un error inesperado.');
-  }
+  @override
+  _AdminHomeScreenState createState() => _AdminHomeScreenState();
 }
 
- 
+class _AdminHomeScreenState extends State<AdminHomeScreen> {
+  String formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return DateFormat('d \'de\' MMMM \'de\' yyyy', 'es').format(date);
+    } catch (e) {
+      return 'Fecha inválida';
+    }
+  }
+
+  late Future<List<dynamic>> _futureQuejas;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureQuejas = fetchQuejas();
+  }
+
+  Future<List<dynamic>> fetchQuejas() async {
+    final url =
+        Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/quejas/');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        List<dynamic> quejas = json.decode(response.body);
+
+        quejas.sort((a, b) {
+          final dateA = DateTime.parse(a['dateCreated']);
+          final dateB = DateTime.parse(b['dateCreated']);
+          return dateB.compareTo(dateA);
+        });
+
+        return quejas;
+      } else {
+        throw Exception('Error al obtener quejas: ${response.statusCode}');
+      }
+    } on SocketException {
+      throw Exception(
+          'Ups! Estamos tratando de conectar con el servidor, vuelve en unos minutos.');
+    } catch (e) {
+      throw Exception('Ha ocurrido un error inesperado.');
+    }
+  }
+
+  Future<void> _refreshQuejas() async {
+    setState(() {
+      _futureQuejas = fetchQuejas();
+    });
+    await _futureQuejas;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +95,7 @@ Future<List<dynamic>> fetchQuejas() async {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const NotificationScreen()),
+                MaterialPageRoute(builder: (context) => const NotifyScreen()),
               );
             },
           ),
@@ -84,7 +113,8 @@ Future<List<dynamic>> fetchQuejas() async {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const LocationStatusScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const LocationStatusScreen()),
               );
             },
           ),
@@ -103,7 +133,7 @@ Future<List<dynamic>> fetchQuejas() async {
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
-                      hintText: '¿Qué estás pensando?',
+                      hintText: 'Buscar por categoria',
                       fillColor: Colors.green[100],
                       filled: true,
                       border: OutlineInputBorder(
@@ -118,36 +148,39 @@ Future<List<dynamic>> fetchQuejas() async {
           ),
           const Divider(),
           Expanded(
-            child: FutureBuilder<List<dynamic>>(
-              future: fetchQuejas(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
-                    child: _buildErrorCard(snapshot.error.toString()),
-                  );
-                } else {
-                  final quejas = snapshot.data ?? [];
-                  return ListView.builder(
-                    itemCount: quejas.length,
-                    itemBuilder: (context, index) {
-                      final queja = quejas[index];
-                      return _buildPostCard(queja);
-                    },
-                  );
-                }
-              },
+            child: RefreshIndicator(
+              onRefresh: _refreshQuejas,
+              child: FutureBuilder<List<dynamic>>(
+                future: _futureQuejas,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 500),
+                      child: _buildErrorCard(snapshot.error.toString()),
+                    );
+                  } else {
+                    final quejas = snapshot.data ?? [];
+                    return ListView.builder(
+                      itemCount: quejas.length,
+                      itemBuilder: (context, index) {
+                        final queja = quejas[index];
+                        return _buildPostCard(queja);
+                      },
+                    );
+                  }
+                },
+              ),
             ),
           ),
-          // Widget del anuncio en la parte inferior
           AdBanner(),
         ],
       ),
     );
   }
-    Widget _buildErrorCard(String errorMessage) {
+
+  Widget _buildErrorCard(String errorMessage) {
     return Center(
       child: Card(
         color: Colors.red[100],
@@ -164,13 +197,12 @@ Future<List<dynamic>> fetchQuejas() async {
               Text(
                 errorMessage,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () {
-                  // Recargar la página
-                },
+                onPressed: () {},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                 ),
@@ -184,6 +216,9 @@ Future<List<dynamic>> fetchQuejas() async {
   }
 
   Widget _buildPostCard(Map<String, dynamic> queja) {
+    int likes = queja['likes'] ?? 0;
+    bool isLiked = queja['usersLiked'].contains('userId');
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -233,38 +268,128 @@ Future<List<dynamic>> fetchQuejas() async {
               'Estatus: ${queja['status']}',
               style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
             ),
-          const SizedBox(height: 10),
-          if (queja['imageUrl'] != null && queja['imageUrl'].isNotEmpty)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Image.network(
-                queja['imageUrl'],
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Text('Error al cargar la imagen');
-                },
-              ),
-            )
-          else
-            const Text(
-              'Sin imagen',
-              style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-            ),
             const SizedBox(height: 10),
-            const Row(
+            if (queja['imageUrl'] != null && queja['imageUrl'].isNotEmpty)
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ImageZoomScreen(imageUrl: queja['imageUrl']),
+                    ),
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.network(
+                    queja['imageUrl'],
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Text('Error al cargar la imagen');
+                    },
+                  ),
+                ),
+              )
+            else
+              const Text(
+                'Sin imagen',
+                style:
+                    TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+              ),
+            const SizedBox(height: 10),
+            Row(
               children: [
-                Icon(Icons.thumb_up, color: Colors.blue),
-                SizedBox(width: 5),
-                Text('1,964'),
-                SizedBox(width: 20),
-                Icon(Icons.comment, color: Colors.grey),
-                SizedBox(width: 5),
-                Text('135'),
+                IconButton(
+                  icon: Icon(
+                    isLiked ? Icons.thumb_up : Icons.thumb_up_off_alt,
+                    color: isLiked ? Colors.blue : Colors.grey,
+                  ),
+                  onPressed: () async {
+                    final complaintId = queja['_id'];
+                    final response = await _likeQueja(complaintId);
+
+                    if (response) {
+                      setState(() {
+                        likes += isLiked ? -1 : 1;
+                      });
+                    }
+                  },
+                ),
+                Text('$likes'),
+                const SizedBox(width: 20),
+                IconButton(
+                  icon: const Icon(Icons.comment_sharp, color: Colors.grey),
+                  onPressed: () {
+                    final complaintId = queja['_id'];
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CommentScreen(complaintId: complaintId),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+class ImageZoomScreen extends StatelessWidget {
+  final String imageUrl;
+
+  const ImageZoomScreen({Key? key, required this.imageUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Imagen completa'),
+        backgroundColor: const Color.fromARGB(255, 103, 201, 107),
+      ),
+      body: Center(
+        child: PhotoView(
+          imageProvider: NetworkImage(imageUrl),
+          backgroundDecoration: const BoxDecoration(
+            color: Colors.black,
+          ),
+          minScale: PhotoViewComputedScale.contained,
+          maxScale: PhotoViewComputedScale.covered * 3.0,
+        ),
+      ),
+    );
+  }
+}
+
+Future<bool> _likeQueja(String complaintId) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getString('userId');
+
+  final Uri url = Uri.parse(
+      'http://gladboxapi.integrador.xyz:3000/api/v1/quejas/$complaintId/like');
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({'userId': userId}),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      print('Error: ${response.statusCode}');
+      return false;
+    }
+  } catch (e) {
+    print('Error al hacer el like: $e');
+    return false;
   }
 }

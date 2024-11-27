@@ -52,6 +52,10 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyB_VLHZlFXn_lT1GNPe5xJD7h4NjcN38fQ" />
     </application>
 
     <!-- Consultas de paquetes requeridas -->

@@ -3,14 +3,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key});
+class NotifyScreen extends StatefulWidget {
+  const NotifyScreen({super.key});
 
   @override
-  _NotificationScreenState createState() => _NotificationScreenState();
+  _NotifyScreenState createState() => _NotifyScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
+class _NotifyScreenState extends State<NotifyScreen> {
   List<dynamic> _reports = [];
 
   @override
@@ -25,8 +25,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     if (userId != null) {
       try {
         final response = await http.get(
-          Uri.parse(
-              'http://gladboxapi.integrador.xyz:3000/api/v1/quejas/usuario/$userId'),
+          Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/quejas/'),
         );
 
         if (response.statusCode == 200) {
@@ -70,7 +69,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
         if (response.statusCode == 200) {
           print('Estado actualizado correctamente');
-          _fetchReports();
+          _fetchReports(); // Refresca la lista después de actualizar
         } else {
           print('Error al actualizar estado: ${response.statusCode}');
           print('Respuesta del servidor: ${response.body}');
@@ -113,8 +112,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
     switch (status.toLowerCase()) {
       case 'terminada':
         return Colors.green; // Verde para terminado
-      case 'no resuelta':
-        return Colors.orange; // Naranja para no resuelto
+      case 'abierta':
+        return const Color.fromARGB(
+            255, 9, 137, 211); // Naranja para no resuelto
       default:
         return Colors.red; // Rojo para otros estados
     }
@@ -138,13 +138,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _reports.isEmpty
-            ? const Center(
-                child: Text(
-                  'Aún no tienes notificaciones',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : ListView.builder(
                 itemCount: _reports.length,
                 itemBuilder: (context, index) {
@@ -189,21 +183,76 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         ],
                       ),
                       trailing: PopupMenuButton<String>(
-                        onSelected: (value) {
+                        onSelected: (value) async {
                           if (value == 'Eliminar') {
-                            _deleteReport(report['_id']);
+                            bool? confirmDelete = await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Confirmar eliminación'),
+                                  content: const Text(
+                                      '¿Estás seguro de que deseas eliminar esta queja?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
+                                      child: const Text('Cancelar'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
+                                      child: const Text('Eliminar'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+
+                            if (confirmDelete == true) {
+                              _deleteReport(report['_id']);
+                            }
                           } else {
-                            _updateReportStatus(report['_id'], value);
+                            bool? confirmUpdate = await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title:
+                                      const Text('Confirmar cambio de estado'),
+                                  content: Text(
+                                      '¿Estás seguro de que deseas cambiar el estado a "$value"?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
+                                      child: const Text('Cancelar'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
+                                      child: const Text('Confirmar'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+
+                            if (confirmUpdate == true) {
+                              _updateReportStatus(report['_id'], value);
+                            }
                           }
                         },
                         itemBuilder: (context) => [
                           const PopupMenuItem(
-                            value: 'no resuelta',
-                            child: Text('Marcar como No Resuelto'),
+                            value: 'abierta',
+                            child: Text('Marcar como ABIERTA'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'en progreso',
+                            child: Text('Marcar como EN PROGRESO'),
                           ),
                           const PopupMenuItem(
                             value: 'terminada',
-                            child: Text('Marcar como Reporte Terminado'),
+                            child: Text('Marcar como TERMINADA'),
                           ),
                           const PopupMenuItem(
                             value: 'Eliminar',

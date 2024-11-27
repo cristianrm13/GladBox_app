@@ -22,16 +22,16 @@ class HomeScreenG extends StatefulWidget {
 class _HomeScreenGState extends State<HomeScreenG> {
   String formatDate(String dateString) {
     try {
-      // Convertir la fecha a un objeto DateTime
       final date = DateTime.parse(dateString);
-      // Formatear la fecha en un formato legible
       return DateFormat('d \'de\' MMMM \'de\' yyyy', 'es').format(date);
     } catch (e) {
-      return 'Fecha inválida'; // En caso de error
+      return 'Fecha inválida';
     }
   }
 
   late Future<List<dynamic>> _futureQuejas;
+  late List<dynamic> _quejas;
+  String _selectedCategory = '';
 
   @override
   void initState() {
@@ -46,14 +46,12 @@ class _HomeScreenGState extends State<HomeScreenG> {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        // Decodifica el JSON
         List<dynamic> quejas = json.decode(response.body);
 
-        // Ordena las quejas por la fecha de creación (descendente)
         quejas.sort((a, b) {
           final dateA = DateTime.parse(a['dateCreated']);
           final dateB = DateTime.parse(b['dateCreated']);
-          return dateB.compareTo(dateA); // Más reciente primero
+          return dateB.compareTo(dateA);
         });
 
         return quejas;
@@ -73,6 +71,12 @@ class _HomeScreenGState extends State<HomeScreenG> {
       _futureQuejas = fetchQuejas();
     });
     await _futureQuejas;
+  }
+
+  void _filterQuejasByCategory(String category) {
+    setState(() {
+      _selectedCategory = category;
+    });
   }
 
   @override
@@ -138,8 +142,9 @@ class _HomeScreenGState extends State<HomeScreenG> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
+                    onChanged: _filterQuejasByCategory,
                     decoration: InputDecoration(
-                      hintText: '¿Qué estás pensando?',
+                      hintText: 'Buscar por categoria',
                       fillColor: Colors.green[100],
                       filled: true,
                       border: OutlineInputBorder(
@@ -154,30 +159,35 @@ class _HomeScreenGState extends State<HomeScreenG> {
           ),
           const Divider(),
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: _refreshQuejas,
-              child: FutureBuilder<List<dynamic>>(
-                future: _futureQuejas,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 500),
-                      child: _buildErrorCard(snapshot.error.toString()),
-                    );
-                  } else {
-                    final quejas = snapshot.data ?? [];
-                    return ListView.builder(
-                      itemCount: quejas.length,
-                      itemBuilder: (context, index) {
-                        final queja = quejas[index];
-                        return _buildPostCard(queja);
-                      },
-                    );
-                  }
-                },
-              ),
+            child: FutureBuilder<List<dynamic>>(
+              future: _futureQuejas,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    child: _buildErrorCard(snapshot.error.toString()),
+                  );
+                } else {
+                  final quejas = snapshot.data ?? [];
+                  final filteredQuejas = _selectedCategory.isEmpty
+                      ? quejas
+                      : quejas
+                          .where((queja) => queja['category']
+                              .toLowerCase()
+                              .contains(_selectedCategory.toLowerCase()))
+                          .toList();
+
+                  return ListView.builder(
+                    itemCount: filteredQuejas.length,
+                    itemBuilder: (context, index) {
+                      final queja = filteredQuejas[index];
+                      return _buildPostCard(queja);
+                    },
+                  );
+                }
+              },
             ),
           ),
           AdBanner(),
@@ -208,9 +218,7 @@ class _HomeScreenGState extends State<HomeScreenG> {
               ),
               const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () {
-                  // Recargar la página
-                },
+                onPressed: () {},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                 ),
@@ -224,8 +232,8 @@ class _HomeScreenGState extends State<HomeScreenG> {
   }
 
   Widget _buildPostCard(Map<String, dynamic> queja) {
-    int likes = queja['likes'] ?? 0;  // Obtener el número de likes de la queja
-  bool isLiked = queja['usersLiked'].contains('userId'); 
+    int likes = queja['likes'] ?? 0;
+    bool isLiked = queja['usersLiked'].contains('userId');
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
@@ -308,28 +316,24 @@ class _HomeScreenGState extends State<HomeScreenG> {
             const SizedBox(height: 10),
             Row(
               children: [
-                // Botón de like
-              IconButton(
-                icon: Icon(
-                  isLiked ? Icons.thumb_up : Icons.thumb_up_off_alt,
-                  color: isLiked ? Colors.blue : Colors.grey,
+                IconButton(
+                  icon: Icon(
+                    isLiked ? Icons.handshake : Icons.handshake_outlined,
+                    color: isLiked ? Colors.blue : Colors.grey,
+                  ),
+                  onPressed: () async {
+                    final complaintId = queja['_id'];
+                    final response = await _likeQueja(complaintId);
+
+                    if (response) {
+                      setState(() {
+                        likes += isLiked ? -1 : 1;
+                      });
+                    }
+                  },
                 ),
-                onPressed: () async {
-                  // Aquí puedes implementar la lógica para dar like a la queja
-                  final complaintId = queja['_id'];
-                  final response = await _likeQueja(complaintId);  // Función para enviar el like al backend
-
-                  if (response) {
-                    setState(() {
-                      // Actualizar el contador de likes y el estado de like
-                      likes += isLiked ? -1 : 1;
-                    });
-                  }
-                },
-              ),
-              Text('$likes'), // Contador de likes
-
-              const SizedBox(width: 20),
+                Text('$likes'),
+                const SizedBox(width: 20),
                 IconButton(
                   icon: const Icon(Icons.comment_sharp, color: Colors.grey),
                   onPressed: () {
@@ -379,18 +383,13 @@ class ImageZoomScreen extends StatelessWidget {
   }
 }
 
-
-
 Future<bool> _likeQueja(String complaintId) async {
-  // Aquí debes obtener el userId dinámicamente (por ejemplo, desde el contexto de autenticación)
   SharedPreferences prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString(
-        'userId');   // Reemplaza esto con el código que obtiene el userId del usuario autenticado
-  
-  final Uri url = Uri.parse('http://gladboxapi.integrador.xyz:3000/api/v1/quejas/$complaintId/like');
+  final userId = prefs.getString('userId');
 
+  final Uri url = Uri.parse(
+      'http://gladboxapi.integrador.xyz:3000/api/v1/quejas/$complaintId/like');
   try {
-    // Enviamos la solicitud POST
     final response = await http.post(
       url,
       headers: {
@@ -399,17 +398,13 @@ Future<bool> _likeQueja(String complaintId) async {
       body: json.encode({'userId': userId}),
     );
 
-    // Verificamos si la respuesta es exitosa (status 200)
     if (response.statusCode == 200) {
-      // Aquí puedes manejar la lógica en caso de éxito (p. ej., actualizando el contador de likes)
       return true;
     } else {
-      // Aquí puedes manejar diferentes códigos de error si es necesario
       print('Error: ${response.statusCode}');
       return false;
     }
   } catch (e) {
-    // Si ocurre algún error en la solicitud HTTP
     print('Error al hacer el like: $e');
     return false;
   }

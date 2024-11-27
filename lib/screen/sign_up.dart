@@ -21,10 +21,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _telefonoController = TextEditingController();
   final TextEditingController _contrasenaController = TextEditingController();
   final TextEditingController _confirmcontrasenaController = TextEditingController();
+  final TextEditingController _roleController = TextEditingController();
 
   // Función que hace la solicitud HTTP
   Future<void> registerUser(
-      String nombre, String correo, String contrasena,String telefono) async {
+      String nombre, String correo, String contrasena,String telefono, String role) async {
     try {
       final response = await http.post(
         Uri.parse(
@@ -35,6 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           "correo": correo,
           "contrasena": contrasena,
           "telefono": telefono,
+          "role": 'user',
         }),
       );
 
@@ -100,7 +102,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     controller: _correoController,
                     decoration: const InputDecoration(
                       labelText: 'correo',
-                      hintText: 'ex: juan.perez@correo.com',
+                      hintText: 'ex: luis.perez@example.com',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -225,6 +227,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           _correoController.text,
                           _contrasenaController.text,
                           _telefonoController.text,
+                          _roleController.text,
                         );
                       }
                     },
