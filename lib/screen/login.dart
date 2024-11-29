@@ -25,7 +25,7 @@ class _LoginScreensState extends State<LoginScreens> {
 
       if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final token = data['token'] ?? '';  // Manejar token como string vacío si es null
+      final token = data['token'] ?? '';  
       final role = data['role'] ?? '';
       final userId = data['usuario']?['_id'] ?? ''; 
 
@@ -33,7 +33,7 @@ class _LoginScreensState extends State<LoginScreens> {
 
         await prefs.setString('token', token);
         await prefs.setString('role', role);
-        await prefs.setString('userId', userId); // Guarda el userId
+        await prefs.setString('userId', userId);
         print("userId obtenido de SharedPreferences: $userId");
 
         if (role == 'admin') {

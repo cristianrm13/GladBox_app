@@ -258,11 +258,11 @@ class _ReportesViewState extends State<ReportesView> {
               barRods: [
                 BarChartRodData(
                   toY: entry.value.toDouble(),
-                  width: 30, // Ancho de la barra
+                  width: 30,
                   color: barColor,
                   borderSide: BorderSide(
                       color: barColor.withOpacity(0.5), width: 1),
-                  borderRadius: BorderRadius.zero, // Sin redondeo para hacerla rectangular
+                  borderRadius: BorderRadius.zero, 
                   backDrawRodData: BackgroundBarChartRodData(
                     show: true,
                     toY: entry.value.toDouble(),
@@ -305,11 +305,11 @@ class _ReportesViewState extends State<ReportesView> {
               barRods: [
                 BarChartRodData(
                   toY: entry.value.toDouble(),
-                  width: 30, // Ancho de la barra
+                  width: 30, 
                   color: barColor,
                   borderSide: BorderSide(
                       color: barColor.withOpacity(0.5), width: 1),
-                  borderRadius: BorderRadius.zero, // Sin redondeo para hacerla rectangular
+                  borderRadius: BorderRadius.zero, 
                   backDrawRodData: BackgroundBarChartRodData(
                     show: true,
                     toY: entry.value.toDouble(),
@@ -413,7 +413,7 @@ class _ReportesViewState extends State<ReportesView> {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: barColor, // Color del texto igual al de la barra
+                          color: barColor,
                         ),
                         textAlign: TextAlign.center,
                       ),
